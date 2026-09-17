@@ -112,45 +112,51 @@ export default function AdminArticlesPage() {
                   <td colSpan={5} className="py-10 text-center text-slate-400">No articles created yet.</td>
                 </tr>
               ) : (
-                articles.map((art) => (
-                  <tr key={art.id} className="hover:bg-slate-50/80">
+                articles.map((articleItem) => (
+                  <tr key={articleItem.id} className="hover:bg-slate-50/80">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <img
-                          src={art.cover_image}
+                          src={articleItem.cover_image || "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?auto=format&fit=crop&w=1200&q=80"}
                           alt=""
                           className="w-12 h-10 rounded-lg object-cover border border-slate-200"
                         />
                         <div>
-                          <div className="font-bold text-slate-900 line-clamp-1">{art.title}</div>
-                          <Link href={`/blog/${art.slug}`} target="_blank" className="text-xs text-emerald-700 hover:underline">
-                            /blog/{art.slug} ↗
+                          <div className="font-bold text-slate-900 line-clamp-1">{articleItem.title}</div>
+                          <Link href={`/blog/${articleItem.slug}`} target="_blank" className="text-xs text-emerald-700 hover:underline">
+                            /blog/{articleItem.slug} ↗
                           </Link>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-6">
                       <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                        {art.category}
+                        {articleItem.category}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-xs text-slate-600 font-medium">{art.author}</td>
+                    <td className="py-4 px-6 text-xs text-slate-600 font-medium">{articleItem.author}</td>
                     <td className="py-4 px-6">
                       <button
-                        onClick={() => togglePublish(art.id, art.published)}
+                        onClick={() => togglePublish(articleItem.id, articleItem.published)}
                         className={`text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer transition-all ${
-                          art.published
+                          articleItem.published
                             ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
                             : "bg-slate-100 text-slate-500 border border-slate-300"
                         }`}
                       >
-                        {art.published ? "Published" : "Draft"}
+                        {articleItem.published ? "Published" : "Draft"}
                       </button>
                     </td>
                     <td className="py-4 px-6 text-right space-x-2">
+                      <Link
+                        href={`/admin/articles/${articleItem.id}/edit`}
+                        className="inline-block px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 text-xs font-bold transition-all"
+                      >
+                        Edit
+                      </Link>
                       <button
-                        onClick={() => handleDelete(art.id, art.title)}
-                        className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold cursor-pointer"
+                        onClick={() => handleDelete(articleItem.id, articleItem.title)}
+                        className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold cursor-pointer transition-all"
                       >
                         Delete
                       </button>
