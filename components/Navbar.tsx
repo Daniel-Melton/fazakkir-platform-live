@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const NAV_ITEMS = [
-  { label: "Why 1-on-1", href: "#why-fazakkir" },
-  { label: "Our Standards", href: "#tutor-standards" },
-  { label: "Courses", href: "#courses" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "FAQs", href: "#faq" },
+  { label: "Why 1-on-1", href: "/#why-fazakkir" },
+  { label: "Our Standards", href: "/#tutor-standards" },
+  { label: "Courses", href: "/#courses" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "FAQs", href: "/#faq" },
 ];
 
 export default function Navbar() {
@@ -17,8 +17,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 160;
-      const sections = NAV_ITEMS.map((item) => item.href.substring(1));
-
+      const sections = NAV_ITEMS.map((item) => item.href.replace("/#", "").replace("#", ""));
       for (const sectionId of sections) {
         const el = document.getElementById(sectionId);
         if (el) {

@@ -179,6 +179,13 @@ export default function AdminLeadsPage() {
             >
               Sign Out
             </button>
+            <Link
+                href="/admin/courses/new"
+                className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                <i className="fa-solid fa-plus text-[10px]"></i>
+                <span>Add Course</span>
+            </Link>
           </div>
         </div>
       </header>
