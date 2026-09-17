@@ -7,8 +7,8 @@ const NAV_ITEMS = [
   { label: "Why 1-on-1", href: "/#why-fazakkir" },
   { label: "Our Standards", href: "/#tutor-standards" },
   { label: "Courses", href: "/courses" },
-  { label: "Pricing", href: "/pricing" },  // <--- الرابط الجديد
-  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Blog", href: "/blog" }, // <--- الرابط الجديد
   { label: "FAQs", href: "/#faq" },
 ];
 

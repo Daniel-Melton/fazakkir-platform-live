@@ -194,6 +194,14 @@ export default function AdminLeadsPage() {
                 <i className="fa-solid fa-list-check"></i>
                 <span>Manage Courses</span>
               </Link>
+
+              <Link
+              href="/admin/articles"
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
+            >
+              <i className="fa-solid fa-feather-pointed"></i>
+              <span>Articles Hub</span>
+            </Link>
           </div>
         </div>
       </header>
