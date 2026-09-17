@@ -558,11 +558,34 @@ export default function Home() {
       </a>
 
       {/* Footer */}
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-2">
-          <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-          <p className="text-xs text-emerald-400/80">
-            Contact: <a href="mailto:lonelywolf1452@gmail.com" className="hover:underline text-emerald-300">lonelywolf1452@gmail.com</a>
+      {/* Footer */}
+      <footer className="bg-[#022c22] text-[#a7f3d0] py-12 text-sm border-t border-emerald-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div>
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+              <span className="text-lg font-extrabold text-white">Fazakkir Academy</span>
+              <span className="font-amiri text-emerald-400 font-bold">فَذَكِّرْ</span>
+            </div>
+            <p className="text-xs text-emerald-400/80">
+              Personalized 1-on-1 Quran, Tajweed & Arabic mentorship by certified Azhari scholars.
+            </p>
+          </div>
+
+          {/* Legal and Quick Links */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms & Refunds
+            </Link>
+            <a href="mailto:lonelywolf1452@gmail.com" className="hover:text-white transition-colors">
+              Support
+            </a>
+          </div>
+
+          <p className="text-xs text-emerald-500">
+            © 2026 Fazakkir Academy. All rights reserved.
           </p>
         </div>
       </footer>
