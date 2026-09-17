@@ -36,7 +36,7 @@ export default function Home() {
             </h1>
 
             <p className="text-slate-600 text-base md:text-lg leading-relaxed">
-              Empowering Muslim families across the USA, UK, Canada & Europe to recite with confidence, memorize with precision, and understand Quranic Arabic from certified Azhari scholars.
+              Empowering Muslim families across the USA, UK, Canada & Europe to recite with confidence, memorize with precision, and understand Quranic Arabic from certified Azhari scholars[cite: 1].
             </p>
 
             {/* Visual Blob & Live Floating Badge */}
@@ -56,8 +56,8 @@ export default function Home() {
                   <i className="fa-solid fa-mosque"></i>
                 </div>
                 <div>
-                  <div className="text-base font-extrabold text-slate-900">98% Fluency Rate</div>
-                  <div className="text-xs text-slate-500">Fluent recitation in 90 days</div>
+                  <div className="text-base font-extrabold text-slate-900">Certified Azhar Scholars</div>
+                  <div className="text-xs text-slate-500">Connected Sanad & Native Pronunciation</div>
                 </div>
               </div>
             </div>
@@ -86,34 +86,221 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Global Impact Stats */}
-      <section className="bg-gradient-to-r from-[#022c22] to-[#064e3b] text-white py-12 shadow-inner">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      {/* 1. Core Commitments & Quality Guarantees (بديل شريط الأرقام) */}
+      <section className="bg-gradient-to-r from-[#022c22] to-[#064e3b] text-white py-10 shadow-inner border-y border-emerald-950">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { val: "15+", label: "Years Academic Experience" },
-            { val: "50+", label: "Certified Azhari Scholars" },
-            { val: "1,400+", label: "Active Students Worldwide" },
-            { val: "4.9 / 5", label: "Parent Rating Score" },
-          ].map((s, i) => (
-            <div key={i} className="stat-box">
-              <h3 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-emerald-200 to-teal-200 bg-clip-text text-transparent mb-1">
-                {s.val}
-              </h3>
-              <p className="text-xs md:text-sm text-emerald-200 font-semibold">{s.label}</p>
+            {
+              icon: "fa-certificate",
+              title: "Al-Azhar Verified",
+              desc: "Authentic Sanad with direct chain of transmission to the Prophet ﷺ[cite: 1].",
+            },
+            {
+              icon: "fa-chalkboard-user",
+              title: "1-on-1 Focus",
+              desc: "100% dedicated teacher attention, personalized pace & instant feedback.",
+            },
+            {
+              icon: "fa-clock",
+              title: "Flexible Scheduling",
+              desc: "Available 24/7 matching USA, UK, Canada & Europe family routines[cite: 1].",
+            },
+            {
+              icon: "fa-shield-halved",
+              title: "Zero Obligation",
+              desc: "2 free trial lessons with no credit card or advance payment required[cite: 1].",
+            },
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all"
+            >
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-400 to-emerald-600 text-slate-950 flex-shrink-0 flex items-center justify-center text-xl font-bold shadow-md shadow-emerald-500/20">
+                <i className={`fa-solid ${item.icon}`}></i>
+              </div>
+              <div>
+                <h4 className="font-extrabold text-emerald-100 text-base mb-1">{item.title}</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">{item.desc}</p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 3 Easy Steps to Learn (Red Theme) */}
+      {/* 2. Interactive Comparison: 1-on-1 vs Weekend Schools (الخيار الثاني) */}
+      <section id="why-fazakkir" className="py-20 bg-white border-b border-slate-200/80">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
+              <i className="fa-solid fa-scale-balanced"></i> Honest Comparison
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">Why Families Prefer 1-on-1 Mentorship</h2>
+            <p className="text-slate-500 text-sm md:text-base mt-2">See how our dedicated Azhari instruction compares to traditional crowded weekend classrooms.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* The Traditional Way */}
+            <div className="bg-slate-50 rounded-2xl p-7 border border-slate-200 shadow-sm relative">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+                <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                  <i className="fa-solid fa-users-slash"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Traditional Weekend Schools</h3>
+                  <span className="text-xs text-slate-500">Crowded group environments</span>
+                </div>
+              </div>
+
+              <ul className="space-y-4">
+                {[
+                  "15 to 20 students packed per classroom.",
+                  "Only 2-3 minutes of individual recitation per child.",
+                  "Fixed weekend rush hours & tedious driving commutes.",
+                  "Generic pacing where quiet students get left behind.",
+                ].map((point, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
+                    <i className="fa-solid fa-xmark text-rose-500 font-bold mt-1 text-sm flex-shrink-0"></i>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Fazakkir 1-on-1 Advantage */}
+            <div className="bg-gradient-to-b from-emerald-50/70 to-white rounded-2xl p-7 border-2 border-emerald-400 shadow-lg shadow-emerald-900/5 relative">
+              <span className="absolute -top-3.5 right-6 px-3 py-1 bg-emerald-600 text-white rounded-full text-[11px] font-extrabold uppercase tracking-wide shadow">
+                Recommended Choice
+              </span>
+
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-emerald-100">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shadow-sm">
+                  <i className="fa-solid fa-hand-holding-heart"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-emerald-950">Fazakkir 1-on-1 Experience</h3>
+                  <span className="text-xs text-emerald-700 font-semibold">Customized individual education</span>
+                </div>
+              </div>
+
+              <ul className="space-y-4">
+                {[
+                  "100% private session dedicated solely to your child.",
+                  "30-45 continuous minutes of practical recitation and correction.",
+                  "Comfort of your home at any hour that suits your schedule.",
+                  "Tailored curriculum adapting strictly to student's pace and retention.",
+                ].map((point, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-800 font-medium">
+                    <i className="fa-solid fa-check text-emerald-600 font-bold mt-1 text-sm flex-shrink-0"></i>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. 3D Flip Cards: Tutor Quality & Vetting Standards (الخيار الأول) */}
+      <section id="tutor-standards" className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
+              <i className="fa-solid fa-user-graduate"></i> Academic Excellence
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">How We Handpick Our Tutors</h2>
+            <p className="text-slate-500 text-sm md:text-base mt-2">
+              Hover or tap on each card to discover the rigorous vetting steps every Fazakkir scholar undergoes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: "fa-mosque",
+                badge: "Requirement 01",
+                title: "Al-Azhar Certification",
+                short: "Graduates of Islamic & Quranic studies from Al-Azhar University.",
+                backTitle: "Authentic Pedigree",
+                backDetails: "Every teacher holds an authentic connected Sanad back to the Prophet ﷺ, guaranteeing pristine articulation and Tajweed rules[cite: 1].",
+              },
+              {
+                icon: "fa-comments",
+                badge: "Requirement 02",
+                title: "Fluent English Skills",
+                short: "Native-level communication to effortlessly engage Western students.",
+                backTitle: "Zero Language Barrier",
+                backDetails: "We screen rigorously for English clarity so young children raised in the US, UK, and Canada feel completely comfortable and understood.",
+              },
+              {
+                icon: "fa-heart-pulse",
+                badge: "Requirement 03",
+                title: "Child Psychology",
+                short: "Specialized in patience, positive encouragement & engagement.",
+                backTitle: "Gentle Mentorship",
+                backDetails: "Teachers are trained in child psychology to foster a loving relationship with the Quran, replacing strictness with motivating rewards.",
+              },
+              {
+                icon: "fa-user-shield",
+                badge: "Requirement 04",
+                title: "Safe & Monitored",
+                short: "Background verified with dedicated female tutors for sisters[cite: 1].",
+                backTitle: "Family Peace of Mind",
+                backDetails: "Dedicated certified female scholars are available for sisters and young girls, with supervisory quality checks conducted routinely[cite: 1].",
+              },
+            ].map((card, i) => (
+              <div key={i} className="group perspective-1000 h-72 cursor-pointer">
+                <div className="relative w-full h-full duration-500 transform-style-3d group-hover:rotate-y-180 transition-transform">
+                  {/* Front Side */}
+                  <div className="absolute inset-0 w-full h-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between backface-hidden">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xl font-bold">
+                          <i className={`fa-solid ${card.icon}`}></i>
+                        </div>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-100/60 px-2.5 py-1 rounded-full">
+                          {card.badge}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{card.title}</h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">{card.short}</p>
+                    </div>
+
+                    <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                      <span>Hover / Tap for details</span>
+                      <i className="fa-solid fa-arrow-rotate-right text-[10px]"></i>
+                    </div>
+                  </div>
+
+                  {/* Back Side (Revealed on hover) */}
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-emerald-800 to-teal-950 text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between rotate-y-180 backface-hidden">
+                    <div>
+                      <div className="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
+                        {card.backTitle}
+                      </div>
+                      <p className="text-xs text-slate-200 leading-relaxed">{card.backDetails}</p>
+                    </div>
+
+                    <div className="text-[11px] font-semibold text-emerald-300/80 flex items-center gap-1.5 border-t border-white/10 pt-2">
+                      <i className="fa-solid fa-circle-check text-emerald-400"></i>
+                      <span>Verified standard</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. How Learning Works (Red Theme 1, 2, 3) */}
       <section id="how-it-works" className="py-24 bg-gradient-to-b from-[#fff1f2] to-white relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-rose-100 border border-rose-200 text-rose-800 text-xs font-bold uppercase tracking-wider mb-3">
-              <i className="fa-solid fa-compass"></i> Seamless Onboarding
+              <i className="fa-solid fa-compass"></i> Seamless Onboarding[cite: 1]
             </span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">How Learning Works With Us</h2>
-            <p className="text-slate-500 text-sm md:text-base mt-2">A proven, student-centered approach to help you and your children start Quranic education with zero friction.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">How Learning Works With Us[cite: 1]</h2>
+            <p className="text-slate-500 text-sm md:text-base mt-2">A proven, student-centered approach to help you and your children start Quranic education with zero friction[cite: 1].</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -122,19 +309,19 @@ export default function Home() {
                 num: "1",
                 icon: "fa-clipboard-list",
                 title: "Book Free Assessment",
-                desc: "Submit your details. Our academic coordinator connects with you on WhatsApp within 15 minutes to evaluate current proficiency levels.",
+                desc: "Submit your details. Our academic coordinator connects with you on WhatsApp within 15 minutes to evaluate current proficiency levels[cite: 1].",
               },
               {
                 num: "2",
                 icon: "fa-handshake-angle",
                 title: "Take 2 Free Trial Lessons",
-                desc: "Experience our live 1-on-1 virtual classroom with a matched Azhari tutor. Witness first-hand teaching quality before any payment.",
+                desc: "Experience our live 1-on-1 virtual classroom with a matched Azhari tutor. Witness first-hand teaching quality before any payment[cite: 1].",
               },
               {
                 num: "3",
                 icon: "fa-award",
                 title: "Custom Schedule & Growth",
-                desc: "Set a weekly timetable that fits your timezone. Receive monthly milestone reports and accredited completion certificates.",
+                desc: "Set a weekly timetable that fits your timezone. Receive monthly milestone reports and accredited completion certificates[cite: 1].",
               },
             ].map((st, i) => (
               <div
@@ -155,15 +342,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Courses Grid with Original FontAwesome Icons */}
+      {/* 5. Courses Grid */}
       <section id="courses" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
-              <i className="fa-solid fa-book-open"></i> Accredited Curriculums
+              <i className="fa-solid fa-book-open"></i> Accredited Curriculums[cite: 1]
             </span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">Structured Courses for All Levels</h2>
-            <p className="text-slate-500 text-sm md:text-base mt-2">Select your specialized pathway taught 1-on-1 by certified Al-Azhar instructors.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">Structured Courses for All Levels[cite: 1]</h2>
+            <p className="text-slate-500 text-sm md:text-base mt-2">Select your specialized pathway taught 1-on-1 by certified Al-Azhar instructors[cite: 1].</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -172,11 +359,11 @@ export default function Home() {
                 title: "Noorani Qaida & Basics",
                 badge: "Beginner • Kids & Adults",
                 icon: "fa-cubes",
-                desc: "Master Arabic phonetics, Makharij articulation points, and letter connecting rules to read the Quran independently.",
+                desc: "Master Arabic phonetics, Makharij articulation points, and letter connecting rules to read the Quran independently[cite: 1].",
                 features: [
-                  "Accurate phonetics pronunciation",
-                  "Interactive digital whiteboards",
-                  "Read short Surahs with confidence",
+                  "Accurate phonetics pronunciation[cite: 1]",
+                  "Interactive digital whiteboards[cite: 1]",
+                  "Read short Surahs with confidence[cite: 1]",
                 ],
                 targetCourse: "Quran Reading (Noorani Qaida)",
               },
@@ -184,11 +371,11 @@ export default function Home() {
                 title: "Recitation & Tajweed",
                 badge: "Intermediate • All Ages",
                 icon: "fa-book-quran",
-                desc: "Refine your recitation applying rigorous practical Tajweed rules (Ghunnah, Ikhfa, Idgham, Madd, and Waqf stopping signs).",
+                desc: "Refine your recitation applying rigorous practical Tajweed rules (Ghunnah, Ikhfa, Idgham, Madd, and Waqf stopping signs)[cite: 1].",
                 features: [
-                  "Error-free fluent recitation",
-                  "Melodious rhythmic recitation",
-                  "Study Tuhfat Al-Atfal poem",
+                  "Error-free fluent recitation[cite: 1]",
+                  "Melodious rhythmic recitation[cite: 1]",
+                  "Study Tuhfat Al-Atfal poem[cite: 1]",
                 ],
                 targetCourse: "Quran Recitation & Tajweed",
               },
@@ -196,11 +383,11 @@ export default function Home() {
                 title: "Quran Memorization (Hifz)",
                 badge: "Custom Pace • Kids & Adults",
                 icon: "fa-heart-pulse",
-                desc: "A systematic dual retention approach combining daily new verses (Sabaq) with strict past revision (Manzil) to prevent forgetting.",
+                desc: "A systematic dual retention approach combining daily new verses (Sabaq) with strict past revision (Manzil) to prevent forgetting[cite: 1].",
                 features: [
-                  "Daily revision tracking plans",
-                  "Mutashabihat mastery guidance",
-                  "Periodic oral retention exams",
+                  "Daily revision tracking plans[cite: 1]",
+                  "Mutashabihat mastery guidance[cite: 1]",
+                  "Periodic oral retention exams[cite: 1]",
                 ],
                 targetCourse: "Quran Memorization (Hifz)",
               },
@@ -208,11 +395,11 @@ export default function Home() {
                 title: "Quran Ijazah Program",
                 badge: "Advanced • Traced Sanad to Prophet ﷺ",
                 icon: "fa-scroll",
-                desc: "Recite the Holy Quran from memory to an authorized scholar to earn an accredited Sanad connected directly to Prophet Muhammad ﷺ.",
+                desc: "Recite the Holy Quran from memory to an authorized scholar to earn an accredited Sanad connected directly to Prophet Muhammad ﷺ[cite: 1].",
                 features: [
-                  "Hafs 'an 'Asim, Warsh & 10 Qira'at",
-                  "Comprehensive oral theory exam",
-                  "Accredited official Ijazah certificate",
+                  "Hafs 'an 'Asim, Warsh & 10 Qira'at[cite: 1]",
+                  "Comprehensive oral theory exam[cite: 1]",
+                  "Accredited official Ijazah certificate[cite: 1]",
                 ],
                 targetCourse: "Quran Ijazah Program",
               },
@@ -220,11 +407,11 @@ export default function Home() {
                 title: "Arabic for Non-Arabs",
                 badge: "Modern Standard & Quranic Arabic",
                 icon: "fa-language",
-                desc: "Gain conversational fluency and grasp the exact meanings of Quranic verses directly without translation barriers.",
+                desc: "Gain conversational fluency and grasp the exact meanings of Quranic verses directly without translation barriers[cite: 1].",
                 features: [
-                  "Direct Quranic vocabulary immersion",
-                  "Simplified Nahw & Sarf grammar",
-                  "Immersive conversation practice",
+                  "Direct Quranic vocabulary immersion[cite: 1]",
+                  "Simplified Nahw & Sarf grammar[cite: 1]",
+                  "Immersive conversation practice[cite: 1]",
                 ],
                 targetCourse: "Arabic for Non-Arabs",
               },
@@ -232,11 +419,11 @@ export default function Home() {
                 title: "Islamic Studies for Kids",
                 badge: "Youth Curriculum • Fun & Engaging",
                 icon: "fa-seedling",
-                desc: "Nurture genuine Islamic identity through inspiring stories of the Prophets, Seerah, daily Sunnah etiquette, and Fiqh of Salah.",
+                desc: "Nurture genuine Islamic identity through inspiring stories of the Prophets, Seerah, daily Sunnah etiquette, and Fiqh of Salah[cite: 1].",
                 features: [
-                  "Practical Salah & Wudu workshops",
-                  "Inspiring Akhlaq & character building",
-                  "Positive & safe virtual space",
+                  "Practical Salah & Wudu workshops[cite: 1]",
+                  "Inspiring Akhlaq & character building[cite: 1]",
+                  "Positive & safe virtual space[cite: 1]",
                 ],
                 targetCourse: "Islamic Studies for Kids",
               },
@@ -277,102 +464,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="testimonials" className="py-24 bg-gradient-to-b from-[#ecfdf5] to-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
-              <i className="fa-solid fa-quote-left"></i> Verified Student Reviews
-            </span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">Trusted by Muslim Families Worldwide</h2>
-            <p className="text-slate-500 text-sm md:text-base mt-2">Hear how Fazakkir Academy has transformed Quranic learning for families across the globe.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "Finding a patient female teacher for my 7-year-old daughter was our top priority. Teacher Fatima has been phenomenal. My daughter finished Noorani Qaida in just 4 months with beautiful pronunciation!",
-                author: "Sister Aminah",
-                loc: "Texas, USA • Mother of Sarah",
-                initials: "SA",
-              },
-              {
-                quote: "As an NHS doctor in London, my schedule changes every week. My tutor Sheikh Ahmed accommodates my hospital shifts effortlessly. My Tajweed rules and fluency have improved beyond belief.",
-                author: "Dr. Muhammad Khan",
-                loc: "London, UK • Tajweed Student",
-                initials: "MK",
-              },
-              {
-                quote: "The monthly progress reports give us total peace of mind. Both of my sons are enrolled in the Hifz program and their Azhari teacher keeps them deeply motivated and disciplined.",
-                author: "Tariq Ibrahim",
-                loc: "Ontario, Canada • Father of 2",
-                initials: "TI",
-              },
-            ].map((t, i) => (
-              <div key={i} className="bg-white rounded-2xl p-8 border border-emerald-200/60 shadow-sm flex flex-col justify-between hover:-translate-y-1 transition-all">
-                <div className="space-y-4">
-                  <div className="flex gap-1 text-emerald-600 text-xs">
-                    {[...Array(5)].map((_, idx) => (
-                      <i key={idx} className="fa-solid fa-star"></i>
-                    ))}
-                  </div>
-                  <p className="text-sm text-slate-700 italic leading-relaxed">"{t.quote}"</p>
-                </div>
-                <div className="flex items-center gap-3.5 mt-6 pt-4 border-t border-slate-100">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-800 text-white font-extrabold text-sm flex items-center justify-center">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <strong className="block text-sm text-slate-900">{t.author}</strong>
-                    <span className="text-xs text-slate-500">{t.loc}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Accordion */}
-      <section id="faq" className="py-24 bg-slate-50">
+      {/* 6. FAQ Accordion */}
+      <section id="faq" className="py-24 bg-white border-t border-slate-200">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
-              <i className="fa-solid fa-circle-question"></i> Answers & Support
+              <i className="fa-solid fa-circle-question"></i> Answers & Support[cite: 1]
             </span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">Frequently Asked Questions</h2>
-            <p className="text-slate-500 text-sm md:text-base mt-2">Everything you need to know about our classes, schedules, and tutors.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">Frequently Asked Questions[cite: 1]</h2>
+            <p className="text-slate-500 text-sm md:text-base mt-2">Everything you need to know about our classes, schedules, and tutors[cite: 1].</p>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                q: "Are the 2 trial classes really 100% free?",
-                a: "Yes, completely free. You are never required to enter any payment or credit card details. If you decide not to continue after the 2 trial sessions, there is zero commitment.",
+                q: "Are the 2 trial classes really 100% free?[cite: 1]",
+                a: "Yes, completely free. You are never required to enter any payment or credit card details. If you decide not to continue after the 2 trial sessions, there is zero commitment[cite: 1].",
               },
               {
-                q: "Can I request a female teacher for myself or my daughters?",
-                a: "Yes, absolutely. We have an extensive team of certified female Azhari teachers available for sisters and young daughters.",
+                q: "Can I request a female teacher for myself or my daughters?[cite: 1]",
+                a: "Yes, absolutely. We have an extensive team of certified female Azhari teachers available for sisters and young daughters[cite: 1].",
               },
               {
-                q: "What happens if we need to reschedule a class?",
-                a: "We understand family emergencies and changing schedules. Simply notify your coordinator or tutor prior to the class time, and a make-up class will be scheduled for you.",
+                q: "What happens if we need to reschedule a class?[cite: 1]",
+                a: "We understand family emergencies and changing schedules. Simply notify your coordinator or tutor prior to the class time, and a make-up class will be scheduled for you[cite: 1].",
               },
               {
-                q: "What software or equipment do I need?",
-                a: "Any laptop, tablet, or smartphone with internet access and Zoom or Google Meet installed is all you need to join our live interactive classes.",
+                q: "What software or equipment do I need?[cite: 1]",
+                a: "Any laptop, tablet, or smartphone with internet access and Zoom or Google Meet installed is all you need to join our live interactive classes[cite: 1].",
               },
               {
-                q: "What are the qualifications of your teachers?",
-                a: "All our tutors are graduates of Al-Azhar University, hold authentic Ijazaat with connected Sanad, and are fluent in English with years of teaching students in Western countries.",
+                q: "What are the qualifications of your teachers?[cite: 1]",
+                a: "All our tutors are graduates of Al-Azhar University, hold authentic Ijazaat with connected Sanad, and are fluent in English with years of teaching students in Western countries[cite: 1].",
               },
             ].map((f, i) => (
-              <details key={i} className="bg-white rounded-xl border border-slate-200 p-5 group cursor-pointer">
+              <details key={i} className="bg-slate-50 rounded-xl border border-slate-200 p-5 group cursor-pointer">
                 <summary className="font-bold text-slate-900 text-sm md:text-base flex justify-between items-center list-none">
                   <span>{f.q}</span>
                   <i className="fa-solid fa-chevron-down text-emerald-600 transition-transform group-open:rotate-180"></i>
                 </summary>
-                <p className="text-sm text-slate-600 mt-3 leading-relaxed border-t border-slate-100 pt-3">{f.a}</p>
+                <p className="text-sm text-slate-600 mt-3 leading-relaxed border-t border-slate-200/60 pt-3">{f.a}</p>
               </details>
             ))}
           </div>
@@ -393,9 +524,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
         <div className="max-w-7xl mx-auto px-6 space-y-2">
-          <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+          <p>© 2026 Fazakkir Academy. All rights reserved.[cite: 1]</p>
           <p className="text-xs text-emerald-400/80">
-            Contact: <a href="mailto:lonelywolf1452@gmail.com" className="hover:underline text-emerald-300">lonelywolf1452@gmail.com</a>
+            Contact: <a href="mailto:lonelywolf1452@gmail.com" className="hover:underline text-emerald-300">lonelywolf1452@gmail.com[cite: 1]</a>
           </p>
         </div>
       </footer>

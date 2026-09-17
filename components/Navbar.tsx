@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const NAV_ITEMS = [
-  { label: "How It Works", href: "#how-it-works" },
+  { label: "Why 1-on-1", href: "#why-fazakkir" },
+  { label: "Our Standards", href: "#tutor-standards" },
   { label: "Courses", href: "#courses" },
-  { label: "Reviews", href: "#testimonials" },
+  { label: "How It Works", href: "#how-it-works" },
   { label: "FAQs", href: "#faq" },
 ];
 
