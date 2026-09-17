@@ -406,7 +406,7 @@ export default function Home() {
                 title: "Quran Ijazah Program",
                 badge: "Advanced • Traced Sanad to Prophet ﷺ",
                 icon: "fa-scroll",
-                slug: "",
+                slug: "quran-ijazah-program",
                 desc: "Recite the Holy Quran from memory to an authorized scholar to earn an accredited Sanad connected directly to Prophet Muhammad ﷺ.",
                 features: [
                   "Hafs 'an 'Asim, Warsh & 10 Qira'at",
@@ -419,7 +419,7 @@ export default function Home() {
                 title: "Arabic for Non-Arabs",
                 badge: "Modern Standard & Quranic Arabic",
                 icon: "fa-language",
-                slug: "",
+                slug: "arabic-for-non-arabs",
                 desc: "Gain conversational fluency and grasp the exact meanings of Quranic verses directly without translation barriers.",
                 features: [
                   "Direct Quranic vocabulary immersion",
@@ -432,7 +432,7 @@ export default function Home() {
                 title: "Islamic Studies for Kids",
                 badge: "Youth Curriculum • Fun & Engaging",
                 icon: "fa-seedling",
-                slug: "",
+                slug: "islamic-studies-for-kids",
                 desc: "Nurture genuine Islamic identity through inspiring stories of the Prophets, Seerah, daily Sunnah etiquette, and Fiqh of Salah.",
                 features: [
                   "Practical Salah & Wudu workshops",
