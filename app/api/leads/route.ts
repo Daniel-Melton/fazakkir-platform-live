@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 // 3. إرسال تنبيه عبر Resend لإدارة الأكاديمية (باستخدام بريد الاختبار المعتمد)
     if (process.env.RESEND_API_KEY && process.env.ADMIN_NOTIFICATION_EMAIL) {
       const emailResult = await resend.emails.send({
-        from: "Fazakkir Academy <onboarding@resend.dev>",
+        from: "Fazakkir Academy <notifications@fazakkir.com>",
         to: process.env.ADMIN_NOTIFICATION_EMAIL,
         subject: `New Lead: ${fullName} - ${courseName}`,
         html: `
