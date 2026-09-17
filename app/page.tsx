@@ -498,6 +498,17 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        {/* View All Courses Button */}
+          <div className="mt-12 text-center">
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-white border-2 border-emerald-600 text-emerald-950 hover:bg-emerald-600 hover:text-white font-extrabold text-sm shadow-sm hover:shadow-md transition-all group"
+            >
+              <span>Explore All Academy Courses</span>
+              <i className="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </Link>
+          </div>
       </section>
 
       {/* 6. FAQ Accordion */}
