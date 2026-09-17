@@ -584,16 +584,27 @@ export default function Home() {
 
           {/* Legal and Quick Links */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms & Refunds
-            </Link>
-            <a href="mailto:lonelywolf1452@gmail.com" className="hover:text-white transition-colors">
-              Support
-            </a>
+            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
+  <Link href="/pricing" className="hover:text-white transition-colors">
+    Tuition & Plans
+  </Link>
+  <Link href="/privacy-policy" className="hover:text-white transition-colors">
+    Privacy Policy
+  </Link>
+  <Link href="/terms" className="hover:text-white transition-colors">
+    Terms & Refunds
+  </Link>
+  <a
+  href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000"}?text=${encodeURIComponent("Salam Alaikum Fazakkir Academy Support, I have an inquiry.")}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hover:text-white transition-colors"
+>
+  Support
+</a>
+</div>
           </div>
+          
 
           <p className="text-xs text-emerald-500">
             © 2026 Fazakkir Academy. All rights reserved.
