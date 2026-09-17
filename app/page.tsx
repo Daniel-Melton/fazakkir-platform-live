@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
+import Link from "next/link"; 
 
 export default function Home() {
   const chooseCourse = (courseTitle: string) => {
@@ -345,14 +346,19 @@ export default function Home() {
       </section>
 
       {/* 5. Courses Grid (Enhanced Hover & Subtle Feature Font) */}
+      {/* 5. Courses Grid (With Dynamic Syllabus Links & Action Buttons) */}
       <section id="courses" className="py-20 sm:py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
             <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
               <i className="fa-solid fa-book-open"></i> Accredited Curriculums
             </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">Structured Courses for All Levels</h2>
-            <p className="text-slate-500 text-xs sm:text-sm md:text-base mt-2">Select your specialized pathway taught 1-on-1 by certified Al-Azhar instructors.</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">
+              Structured Courses for All Levels
+            </h2>
+            <p className="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
+              Select your specialized pathway taught 1-on-1 by certified Al-Azhar instructors.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -361,6 +367,7 @@ export default function Home() {
                 title: "Noorani Qaida & Basics",
                 badge: "Beginner • Kids & Adults",
                 icon: "fa-cubes",
+                slug: "noorani-qaida-basics",
                 desc: "Master Arabic phonetics, Makharij articulation points, and letter connecting rules to read the Quran independently.",
                 features: [
                   "Accurate phonetics pronunciation",
@@ -373,6 +380,7 @@ export default function Home() {
                 title: "Recitation & Tajweed",
                 badge: "Intermediate • All Ages",
                 icon: "fa-book-quran",
+                slug: "quran-recitation-tajweed",
                 desc: "Refine your recitation applying rigorous practical Tajweed rules (Ghunnah, Ikhfa, Idgham, Madd, and Waqf stopping signs).",
                 features: [
                   "Error-free fluent recitation",
@@ -385,6 +393,7 @@ export default function Home() {
                 title: "Quran Memorization (Hifz)",
                 badge: "Custom Pace • Kids & Adults",
                 icon: "fa-heart-pulse",
+                slug: "quran-memorization-hifz",
                 desc: "A systematic dual retention approach combining daily new verses (Sabaq) with strict past revision (Manzil) to prevent forgetting.",
                 features: [
                   "Daily revision tracking plans",
@@ -397,6 +406,7 @@ export default function Home() {
                 title: "Quran Ijazah Program",
                 badge: "Advanced • Traced Sanad to Prophet ﷺ",
                 icon: "fa-scroll",
+                slug: "",
                 desc: "Recite the Holy Quran from memory to an authorized scholar to earn an accredited Sanad connected directly to Prophet Muhammad ﷺ.",
                 features: [
                   "Hafs 'an 'Asim, Warsh & 10 Qira'at",
@@ -409,6 +419,7 @@ export default function Home() {
                 title: "Arabic for Non-Arabs",
                 badge: "Modern Standard & Quranic Arabic",
                 icon: "fa-language",
+                slug: "",
                 desc: "Gain conversational fluency and grasp the exact meanings of Quranic verses directly without translation barriers.",
                 features: [
                   "Direct Quranic vocabulary immersion",
@@ -421,6 +432,7 @@ export default function Home() {
                 title: "Islamic Studies for Kids",
                 badge: "Youth Curriculum • Fun & Engaging",
                 icon: "fa-seedling",
+                slug: "",
                 desc: "Nurture genuine Islamic identity through inspiring stories of the Prophets, Seerah, daily Sunnah etiquette, and Fiqh of Salah.",
                 features: [
                   "Practical Salah & Wudu workshops",
@@ -435,14 +447,14 @@ export default function Home() {
                 className="course-card bg-white rounded-2xl p-7 sm:p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:border-emerald-300 hover:-translate-y-2 transition-all flex flex-col justify-between group"
               >
                 <div>
-                  <div className="icon-badge-box icon-duo">
+                  <div className="icon-badge-box icon-duo mb-4">
                     <i className={`fa-solid ${c.icon}`}></i>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-1">{c.title}</h3>
                   <span className="text-xs font-bold text-emerald-700 mb-3 block">{c.badge}</span>
                   <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6">{c.desc}</p>
                   
-                  {/* Features with softer font size and weight */}
+                  {/* Features */}
                   <ul className="space-y-2.5 border-t border-dashed border-slate-200 pt-4 mb-6">
                     {c.features.map((f, idx) => (
                       <li key={idx} className="flex items-center gap-2.5 text-[12.5px] font-medium text-slate-700">
@@ -453,14 +465,35 @@ export default function Home() {
                   </ul>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => chooseCourse(c.targetCourse)}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-600 hover:to-teal-700 text-emerald-950 hover:text-white font-bold text-xs border border-emerald-200 hover:border-emerald-600 text-center transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>Book This Course</span>
-                  <i className="fa-solid fa-arrow-right"></i>
-                </button>
+                {/* أزرار الكارت: زر المنهج وزر الحجز السريع */}
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  {c.slug ? (
+                    <Link
+                      href={`/courses/${c.slug}`}
+                      className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <span>Syllabus</span>
+                      <i className="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => chooseCourse(c.targetCourse)}
+                      className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs text-center transition-all"
+                    >
+                      Details
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => chooseCourse(c.targetCourse)}
+                    className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs text-center shadow-md shadow-emerald-700/20 hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Free Trial</span>
+                    <i className="fa-solid fa-arrow-right text-[10px]"></i>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
