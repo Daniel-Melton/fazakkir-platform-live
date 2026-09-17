@@ -1,218 +1,237 @@
 "use client";
 
 import { useState } from "react";
-import { User, Mail, Phone, BookOpen, Lock, Loader2, ArrowRight } from "lucide-react";
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (container: string | HTMLElement, options: any) => string;
-      reset: (widgetId: string) => void;
-    };
-  }
-}
-
-const COURSES = [
-  "Quran Reading (Noorani Qaida)",
-  "Quran Recitation & Tajweed",
-  "Quran Memorization (Hifz)",
-  "Quran Ijazah Program",
-  "Arabic Language for Non-Arabs",
-  "Islamic Studies for Children",
-];
-
-const COUNTRY_CODES = [
-  { label: "🇺🇸/🇨🇦 +1", value: "+1" },
-  { label: "🇬🇧 +44", value: "+44" },
-  { label: "🇦🇺 +61", value: "+61" },
-  { label: "🇸🇦 +966", value: "+966" },
-  { label: "🇦🇪 +971", value: "+971" },
-  { label: "🇪🇬 +20", value: "+20" },
-  { label: "🇩🇪 +49", value: "+49" },
-  { label: "🇫🇷 +33", value: "+33" },
+const COUNTRY_OPTIONS = [
+  { flag: "🇺🇸", name: "USA", code: "+1" },
+  { flag: "🇬🇧", name: "UK", code: "+44" },
+  { flag: "🇨🇦", name: "Canada", code: "+1" },
+  { flag: "🇦🇺", name: "Australia", code: "+61" },
+  { flag: "🇸🇦", name: "KSA", code: "+966" },
+  { flag: "🇦🇪", name: "UAE", code: "+971" },
+  { flag: "🇶🇦", name: "Qatar", code: "+974" },
+  { flag: "🇰🇼", name: "Kuwait", code: "+965" },
+  { flag: "🇩🇪", name: "Germany", code: "+49" },
+  { flag: "🇫🇷", name: "France", code: "+33" },
+  { flag: "🇪🇬", name: "Egypt", code: "+20" },
+  { flag: "🇲🇾", name: "Malaysia", code: "+60" },
+  { flag: "🇸🇬", name: "Singapore", code: "+65" },
 ];
 
 export default function LeadForm() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [countryCode, setCountryCode] = useState("+1");
-  const [phone, setPhone] = useState("");
-  const [course, setCourse] = useState(COURSES[0]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setErrorMsg("");
 
-    // جلب التوكن الخاص بـ Turnstile
-    const turnstileToken = (document.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement)?.value;
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
-    if (!turnstileToken) {
-      setError("Please complete security verification.");
-      setLoading(false);
-      return;
-    }
+    const fullName = (formData.get("fullName") as string)?.trim();
+    const email = (formData.get("email") as string)?.trim();
+    const countryCode = formData.get("countryCode") as string;
+    const phoneNumber = (formData.get("phoneNumber") as string)?.trim();
+    const courseChoice = formData.get("courseChoice") as string;
+
+    const fullPhone = `${countryCode} ${phoneNumber}`;
 
     try {
-      // 1. الإرسال إلى API Route الخاص بنا
-      const res = await fetch("/api/leads", {
+      const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName,
           email,
           countryCode,
-          phoneNumber: phone,
-          courseName: course,
-          turnstileToken,
+          phoneNumber,
+          courseName: courseChoice,
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to submit.");
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit lead");
       }
 
-      // 2. التحويل الفوري إلى واتساب
+      // توجيه العميل لواتساب
       const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000";
-      const fullPhone = `${countryCode} ${phone}`;
-      const waMsg = `*New Free Trial Request - Fazakkir Academy*%0A%0A` +
-                    `*Name:* ${encodeURIComponent(fullName)}%0A` +
-                    `*Email:* ${encodeURIComponent(email)}%0A` +
-                    `*Phone:* ${encodeURIComponent(fullPhone)}%0A` +
-                    `*Course:* ${encodeURIComponent(course)}`;
+      const waMsg =
+        `*New Free Trial Booking - Fazakkir Academy*%0A%0A` +
+        `*Student Name:* ${encodeURIComponent(fullName)}%0A` +
+        `*Email:* ${encodeURIComponent(email)}%0A` +
+        `*WhatsApp:* ${encodeURIComponent(fullPhone)}%0A` +
+        `*Course Selected:* ${encodeURIComponent(courseChoice)}`;
 
       window.location.href = `https://wa.me/${waNumber}?text=${waMsg}`;
     } catch (err: any) {
-      setError(err.message || "An error occurred. Please try again.");
+      setErrorMsg(err.message || "Something went wrong, please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl p-8 md:p-9 shadow-xl shadow-slate-900/10 border border-slate-200 relative overflow-hidden" id="registerForm">
-      <div className="absolute top-0 left-8 right-8 h-1 bg-gradient-to-r from-emerald-500 to-teal-800" />
+    <div
+      className="bg-white rounded-3xl p-7 md:p-8 shadow-2xl shadow-emerald-950/10 border border-slate-200 relative overflow-hidden"
+      id="registerForm"
+    >
+      {/* الخط الأخضر الجمالي أعلى الفورم */}
+      <div className="absolute top-0 left-8 right-8 h-1 bg-gradient-to-r from-emerald-500 to-emerald-900 rounded-b"></div>
 
       <div className="text-center mb-6">
-        <h3 className="text-2xl font-extrabold text-emerald-950">Claim Your 2 Free Classes</h3>
-        <p className="text-xs text-slate-500 mt-1">Instant confirmation on WhatsApp • No credit card</p>
+        <h3 className="text-2xl font-extrabold text-emerald-950 tracking-tight">
+          Claim Your 2 Free Classes
+        </h3>
+        <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">
+          Instant confirmation via WhatsApp • No credit card
+        </p>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl text-center">
-          {error}
+      {errorMsg && (
+        <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+          {errorMsg}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">Student / Parent Name</label>
+          <label
+            htmlFor="fullName"
+            className="block text-xs font-bold text-emerald-950 mb-1.5"
+          >
+            Student / Parent Name
+          </label>
           <div className="relative flex items-center">
-            <User className="absolute left-3.5 w-4 h-4 text-emerald-700 pointer-events-none" />
+            <i className="fa-solid fa-user absolute left-4 text-emerald-600 text-sm pointer-events-none"></i>
             <input
               type="text"
+              id="fullName"
+              name="fullName"
+              placeholder="e.g. Abdullah Khan"
               required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Brother Abdullah"
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 text-sm transition-all"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-emerald-950 font-semibold placeholder:text-slate-400 placeholder:font-normal text-sm bg-white outline-none transition-all"
             />
           </div>
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+          <label
+            htmlFor="emailAddress"
+            className="block text-xs font-bold text-emerald-950 mb-1.5"
+          >
+            Email Address
+          </label>
           <div className="relative flex items-center">
-            <Mail className="absolute left-3.5 w-4 h-4 text-emerald-700 pointer-events-none" />
+            <i className="fa-solid fa-envelope absolute left-4 text-emerald-600 text-sm pointer-events-none"></i>
             <input
               type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="emailAddress"
+              name="email"
               placeholder="e.g. family@example.com"
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 text-sm transition-all"
+              required
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-emerald-950 font-semibold placeholder:text-slate-400 placeholder:font-normal text-sm bg-white outline-none transition-all"
             />
           </div>
         </div>
 
-        {/* Phone with Country Selector */}
+        {/* Phone / WhatsApp مع أعلام الدول */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">WhatsApp Number</label>
-          <div className="grid grid-cols-[130px_1fr] gap-2">
+          <label
+            htmlFor="phoneNumber"
+            className="block text-xs font-bold text-emerald-950 mb-1.5"
+          >
+            WhatsApp Number
+          </label>
+          <div className="grid grid-cols-[145px_1fr] gap-2">
             <select
-              value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
-              className="px-2 py-3 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:border-emerald-600"
+              id="countryCode"
+              name="countryCode"
+              defaultValue="+1"
+              required
+              className="px-2 py-3 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-emerald-950 font-semibold text-xs md:text-sm bg-white outline-none transition-all cursor-pointer"
             >
-              {COUNTRY_CODES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+              {COUNTRY_OPTIONS.map((c, i) => (
+                <option key={i} value={c.code}>
+                  {c.flag} {c.name} ({c.code})
+                </option>
               ))}
             </select>
+
             <div className="relative flex items-center">
-              <Phone className="absolute left-3 w-4 h-4 text-emerald-700 pointer-events-none" />
+              <i className="fa-solid fa-phone absolute left-3.5 text-emerald-600 text-sm pointer-events-none"></i>
               <input
                 type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                id="phoneNumber"
+                name="phoneNumber"
                 placeholder="555 123 4567"
-                className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 text-sm transition-all"
+                required
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-emerald-950 font-semibold placeholder:text-slate-400 placeholder:font-normal text-sm bg-white outline-none transition-all"
               />
             </div>
           </div>
         </div>
 
-        {/* Course Select */}
+        {/* Course Choice */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">Desired Program</label>
+          <label
+            htmlFor="courseChoice"
+            className="block text-xs font-bold text-emerald-950 mb-1.5"
+          >
+            Choose Course Program
+          </label>
           <div className="relative flex items-center">
-            <BookOpen className="absolute left-3.5 w-4 h-4 text-emerald-700 pointer-events-none" />
+            <i className="fa-solid fa-book-quran absolute left-4 text-emerald-600 text-sm pointer-events-none"></i>
             <select
-              value={course}
-              onChange={(e) => setCourse(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:border-emerald-600 text-slate-800"
+              id="courseChoice"
+              name="courseChoice"
+              required
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-emerald-950 font-semibold text-sm bg-white outline-none transition-all cursor-pointer"
             >
-              {COURSES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+              <option value="Quran Reading (Noorani Qaida)">
+                Quran Reading (Noorani Qaida)
+              </option>
+              <option value="Quran Recitation & Tajweed">
+                Quran Recitation & Tajweed
+              </option>
+              <option value="Quran Memorization (Hifz)">
+                Quran Memorization (Hifz)
+              </option>
+              <option value="Quran Ijazah Program">Quran Ijazah Program</option>
+              <option value="Arabic for Non-Arabs">Arabic for Non-Arabs</option>
+              <option value="Islamic Studies for Kids">
+                Islamic Studies for Kids
+              </option>
             </select>
           </div>
         </div>
-
-        {/* Cloudflare Turnstile Container */}
-        <div
-          className="cf-turnstile my-2 flex justify-center"
-          data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-          data-theme="light"
-        />
 
         {/* Submit Button */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 px-4 rounded-xl bg-[#25d366] hover:bg-[#20ba5a] text-white font-bold text-sm shadow-lg shadow-green-600/25 flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all disabled:opacity-75 disabled:pointer-events-none cursor-pointer"
+          className="w-full mt-2 bg-[#25d366] hover:bg-[#1eb954] text-white py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#25d366]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Verifying & Connecting...</span>
+              <i className="fa-solid fa-spinner fa-spin text-base"></i>
+              <span>Connecting to WhatsApp...</span>
             </>
           ) : (
             <>
+              <i className="fa-brands fa-whatsapp text-lg"></i>
               <span>Get Free Trial on WhatsApp</span>
-              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>
 
-        <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 mt-2">
-          <Lock className="w-3.5 h-3.5" />
-          <span>100% Free Trial • Zero Commitment</span>
-        </div>
+        <p className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5 pt-1">
+          <i className="fa-solid fa-shield-halved text-emerald-600 text-xs"></i>
+          <span>Zero obligation • Confidential data</span>
+        </p>
       </form>
     </div>
   );
