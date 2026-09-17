@@ -1,101 +1,110 @@
-import { NextRequest, NextResponse } from "next/server";
-import { leadSchema } from "@/lib/validations/lead";
-import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabaseClient";
 import { Resend } from "resend";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-// إعداد Supabase مع مفتاح الخدمة لتخطي الـ RLS بعد التدقيق
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// إعداد Rate Limiting (3 محاولات لكل دقيقة لكل IP)
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL
-  ? new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(3, "60 s"),
-    })
-  : null;
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
-    if (ratelimit) {
-      const { success } = await ratelimit.limit(ip);
-      if (!success) {
-        return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
-      }
-    }
-
     const body = await req.json();
-    const result = leadSchema.safeParse(body);
 
-    if (!result.success) {
-      return NextResponse.json({ errors: result.error.flatten().fieldErrors }, { status: 400 });
+    const fullName = body.fullName || body.parentName;
+    const email = body.email;
+    const countryCode = body.countryCode || "";
+    const phoneNumber = body.phoneNumber || body.phone || "";
+    const courseName = body.courseName || body.preferredCourse;
+
+    const fullPhone = phoneNumber.startsWith("+")
+      ? phoneNumber
+      : `${countryCode} ${phoneNumber}`.trim();
+
+    if (!fullName || !email || !phoneNumber || !courseName) {
+      return NextResponse.json(
+        { error: "Please fill in all required fields." },
+        { status: 400 }
+      );
     }
 
-    const { fullName, email, countryCode, phoneNumber, courseName, turnstileToken } = result.data;
-
-    // 1. التحقق من Cloudflare Turnstile
-    const turnstileRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: process.env.TURNSTILE_SECRET_KEY!,
-        response: turnstileToken,
-        remoteip: ip,
-      }),
-    });
-    const turnstileData = await turnstileRes.json();
-    if (!turnstileData.success) {
-      return NextResponse.json({ error: "Bot detection failed." }, { status: 403 });
-    }
-
-    // 2. الإدراج في قاعدة البيانات
-    const { data: lead, error: dbError } = await supabase
+    // 1. حفظ بيانات الطالب في Supabase
+    const { data: leadData, error: dbError } = await supabase
       .from("leads")
-      .insert({
-        full_name: fullName,
-        email,
-        country_code: countryCode,
-        phone_number: phoneNumber,
-        course_name: courseName,
-        turnstile_verified: true,
-      })
-      .select("id")
+      .insert([
+        {
+          parent_name: fullName,
+          full_name: fullName,
+          email: email,
+          phone: fullPhone,
+          country: countryCode || "Unknown",
+          student_count: 1,
+          preferred_course: courseName,
+          status: "new",
+        },
+      ])
+      .select()
       .single();
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      console.error("Supabase error:", dbError);
+      return NextResponse.json(
+        { error: `Database error: ${dbError.message}` },
+        { status: 500 }
+      );
+    }
 
-    // 3. إرسال تنبيه عبر Resend لإدارة الأكاديمية
-// 3. إرسال تنبيه عبر Resend لإدارة الأكاديمية (باستخدام بريد الاختبار المعتمد)
-    if (process.env.RESEND_API_KEY && process.env.ADMIN_NOTIFICATION_EMAIL) {
-      const emailResult = await resend.emails.send({
-        from: "Fazakkir Academy <notifications@fazakkir.com>",
-        to: process.env.ADMIN_NOTIFICATION_EMAIL,
-        subject: `New Lead: ${fullName} - ${courseName}`,
+    // 2. إرسال الإشعار البريدي عبر Resend مع فحص دقيق للنتيجة
+    const targetEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "lonelywolf1452@gmail.com";
+
+    if (!process.env.RESEND_API_KEY) {
+      console.warn("⚠️ Warning: RESEND_API_KEY is not defined in environment variables.");
+    } else {
+      console.log(` Attempting to send email via Resend to: ${targetEmail}`);
+
+      const emailResponse = await resend.emails.send({
+        from: "Fazakkir Academy <info@fazakkir.com>",
+        to: targetEmail,
+        subject: `🎓 New Free Trial Request: ${fullName}`,
         html: `
-          <div style="font-family: sans-serif; padding: 20px; color: #0f172a;">
-            <h2 style="color: #059669; margin-bottom: 16px;">New Free Trial Request</h2>
-            <p><strong>Student / Parent:</strong> ${fullName}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>WhatsApp:</strong> ${countryCode} ${phoneNumber}</p>
-            <p><strong>Program:</strong> ${courseName}</p>
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;" />
-            <p style="font-size: 12px; color: #64748b;">Fazakkir Academy Lead Engine</p>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #064e3b; margin-top: 0;">New Free Trial Registration</h2>
+            <p style="color: #475569;">A new student just submitted the registration form:</p>
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">Name:</td>
+                <td style="padding: 8px 0; color: #334155;">${fullName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">Email:</td>
+                <td style="padding: 8px 0; color: #334155;"><a href="mailto:${email}">${email}</a></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">WhatsApp / Phone:</td>
+                <td style="padding: 8px 0; color: #334155;">${fullPhone}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">Selected Course:</td>
+                <td style="padding: 8px 0; color: #334155;">${courseName}</td>
+              </tr>
+            </table>
+            <a href="https://wa.me/${fullPhone.replace(/[^0-9]/g, "")}" style="display: inline-block; background-color: #25d366; color: #ffffff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+              Chat on WhatsApp
+            </a>
           </div>
         `,
       });
-      console.log("Resend email response:", emailResult);
+
+      if (emailResponse.error) {
+        console.error("❌ Resend API Error:", emailResponse.error);
+      } else {
+        console.log("✅ Email sent successfully! ID:", emailResponse.data?.id);
+      }
     }
 
-    return NextResponse.json({ success: true, leadId: lead.id }, { status: 201 });
+    return NextResponse.json({ success: true, lead: leadData });
   } catch (err: any) {
-    console.error("Lead processing error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("API error:", err);
+    return NextResponse.json(
+      { error: err.message || "Failed to submit lead" },
+      { status: 500 }
+    );
   }
 }

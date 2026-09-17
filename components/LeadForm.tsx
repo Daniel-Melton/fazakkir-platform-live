@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const COUNTRY_OPTIONS = [
   { flag: "🇺🇸", name: "USA", code: "+1" },
@@ -21,6 +21,7 @@ const COUNTRY_OPTIONS = [
 export default function LeadForm() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,13 +52,18 @@ export default function LeadForm() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || "Failed to submit lead");
       }
 
-      // توجيه العميل لواتساب
-      const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000";
+      // تفريغ الحقول وإيقاف حالة التحميل
+      formRef.current?.reset();
+      setLoading(false);
+
+      // توجيه العميل لواتساب في نافذة جديدة (لتجنب تعليق الصفحة عند الرجوع)
+      const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
       const waMsg =
         `*New Free Trial Booking - Fazakkir Academy*%0A%0A` +
         `*Student Name:* ${encodeURIComponent(fullName)}%0A` +
@@ -65,7 +71,7 @@ export default function LeadForm() {
         `*WhatsApp:* ${encodeURIComponent(fullPhone)}%0A` +
         `*Course Selected:* ${encodeURIComponent(courseChoice)}`;
 
-      window.location.href = `https://wa.me/${waNumber}?text=${waMsg}`;
+      window.open(`https://wa.me/${waNumber}?text=${waMsg}`, "_blank");
     } catch (err: any) {
       setErrorMsg(err.message || "Something went wrong, please try again.");
       setLoading(false);
@@ -77,7 +83,6 @@ export default function LeadForm() {
       className="bg-white rounded-3xl p-7 md:p-8 shadow-2xl shadow-emerald-950/10 border border-slate-200 relative overflow-hidden"
       id="registerForm"
     >
-      {/* الخط الأخضر الجمالي أعلى الفورم */}
       <div className="absolute top-0 left-8 right-8 h-1 bg-gradient-to-r from-emerald-500 to-emerald-900 rounded-b"></div>
 
       <div className="text-center mb-6">
@@ -95,7 +100,7 @@ export default function LeadForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         {/* Full Name */}
         <div>
           <label
@@ -138,7 +143,7 @@ export default function LeadForm() {
           </div>
         </div>
 
-        {/* Phone / WhatsApp مع أعلام الدول */}
+        {/* Phone / WhatsApp */}
         <div>
           <label
             htmlFor="phoneNumber"
@@ -218,7 +223,7 @@ export default function LeadForm() {
           {loading ? (
             <>
               <i className="fa-solid fa-spinner fa-spin text-base"></i>
-              <span>Connecting to WhatsApp...</span>
+              <span>Sending...</span>
             </>
           ) : (
             <>

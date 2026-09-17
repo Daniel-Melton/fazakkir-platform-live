@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const NAV_ITEMS = [
   { label: "Why 1-on-1", href: "/#why-fazakkir" },
@@ -41,7 +42,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-[999] bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm w-full">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group">
+        {/* <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group">
           <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-900 flex items-center justify-center text-white shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform text-base sm:text-lg">
             <i className="fa-solid fa-kaaba"></i>
           </div>
@@ -52,7 +53,17 @@ export default function Navbar() {
             </div>
             <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 tracking-wider uppercase">Academy</span>
           </div>
-        </Link>
+        </Link> */}
+          <div className="relative w-11 h-11 flex-shrink-0 group-hover:scale-105 transition-transform">
+            <Image
+              src="/logo.png" // أو /logo.svg حسب امتداد ملفك
+              alt="Fazakkir Academy Logo"
+              width={44}
+              height={44}
+              className="w-full h-full object-contain"
+              priority
+            />
+          </div>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
