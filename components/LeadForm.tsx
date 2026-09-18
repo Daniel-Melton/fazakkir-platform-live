@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const COUNTRY_OPTIONS = [
@@ -19,7 +19,7 @@ const COUNTRY_OPTIONS = [
   { flag: "🇸🇬", name: "Singapore", code: "+65" },
 ];
 
-export default function LeadForm() {
+function LeadFormContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -81,11 +81,9 @@ export default function LeadForm() {
         throw new Error(data.error || "Failed to submit lead");
       }
 
-      // تفريغ الحقول وإيقاف حالة التحميل
       formRef.current?.reset();
       setLoading(false);
 
-      // توجيه العميل لواتساب في نافذة جديدة (لتجنب تعليق الصفحة عند الرجوع)
       const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
       let waMsg =
         `*New Free Trial Booking - Fazakkir Academy*%0A%0A` +
@@ -94,7 +92,6 @@ export default function LeadForm() {
         `*WhatsApp:* ${encodeURIComponent(fullPhone)}%0A` +
         `*Course Selected:* ${encodeURIComponent(courseChoice)}`;
 
-      // إضافة تفاصيل الخطة فقط إذا كان قادماً من الحاسبة
       if (isFromCalculator && planPriceValue) {
         waMsg += `%0A*Plan Selected:* ${encodeURIComponent(planSummary)} (${planStudents} students)%0A*Estimated Total:* ${encodeURIComponent(planPriceValue)} (Discount: ${encodeURIComponent(planDiscountValue || "None")})`;
       }
@@ -118,7 +115,6 @@ export default function LeadForm() {
           Claim Your 2 Free Classes
         </h3>
         
-        {/* إظهار تفاصيل الخطة فقط للقادمين من الحاسبة */}
         {isFromCalculator && planPriceValue ? (
           <div className="mt-2 inline-block bg-emerald-50 border border-emerald-300 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold">
             Selected Plan: {planStudents} student(s) • {planPriceValue}/mo ({planDiscountValue || "Standard"})
@@ -137,12 +133,8 @@ export default function LeadForm() {
       )}
 
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-        {/* Full Name */}
         <div>
-          <label
-            htmlFor="fullName"
-            className="block text-xs font-bold text-emerald-950 mb-1.5"
-          >
+          <label htmlFor="fullName" className="block text-xs font-bold text-emerald-950 mb-1.5">
             Student / Parent Name
           </label>
           <div className="relative flex items-center">
@@ -158,12 +150,8 @@ export default function LeadForm() {
           </div>
         </div>
 
-        {/* Email */}
         <div>
-          <label
-            htmlFor="emailAddress"
-            className="block text-xs font-bold text-emerald-950 mb-1.5"
-          >
+          <label htmlFor="emailAddress" className="block text-xs font-bold text-emerald-950 mb-1.5">
             Email Address
           </label>
           <div className="relative flex items-center">
@@ -179,12 +167,8 @@ export default function LeadForm() {
           </div>
         </div>
 
-        {/* Phone / WhatsApp */}
         <div>
-          <label
-            htmlFor="phoneNumber"
-            className="block text-xs font-bold text-emerald-950 mb-1.5"
-          >
+          <label htmlFor="phoneNumber" className="block text-xs font-bold text-emerald-950 mb-1.5">
             WhatsApp Number
           </label>
           <div className="grid grid-cols-[145px_1fr] gap-2">
@@ -216,12 +200,8 @@ export default function LeadForm() {
           </div>
         </div>
 
-        {/* Course Choice */}
         <div>
-          <label
-            htmlFor="courseChoice"
-            className="block text-xs font-bold text-emerald-950 mb-1.5"
-          >
+          <label htmlFor="courseChoice" className="block text-xs font-bold text-emerald-950 mb-1.5">
             Choose Course Program
           </label>
           <div className="relative flex items-center">
@@ -232,25 +212,16 @@ export default function LeadForm() {
               required
               className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-emerald-950 font-semibold text-sm bg-white outline-none transition-all cursor-pointer"
             >
-              <option value="Quran Reading (Noorani Qaida)">
-                Quran Reading (Noorani Qaida)
-              </option>
-              <option value="Quran Recitation & Tajweed">
-                Quran Recitation & Tajweed
-              </option>
-              <option value="Quran Memorization (Hifz)">
-                Quran Memorization (Hifz)
-              </option>
+              <option value="Quran Reading (Noorani Qaida)">Quran Reading (Noorani Qaida)</option>
+              <option value="Quran Recitation & Tajweed">Quran Recitation & Tajweed</option>
+              <option value="Quran Memorization (Hifz)">Quran Memorization (Hifz)</option>
               <option value="Quran Ijazah Program">Quran Ijazah Program</option>
               <option value="Arabic for Non-Arabs">Arabic for Non-Arabs</option>
-              <option value="Islamic Studies for Kids">
-                Islamic Studies for Kids
-              </option>
+              <option value="Islamic Studies for Kids">Islamic Studies for Kids</option>
             </select>
           </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading}
@@ -275,5 +246,13 @@ export default function LeadForm() {
         </p>
       </form>
     </div>
+  );
+}
+
+export default function LeadForm() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading form...</div>}>
+      <LeadFormContent />
+    </Suspense>
   );
 }

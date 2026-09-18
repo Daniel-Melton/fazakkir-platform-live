@@ -207,22 +207,51 @@ export default function AdminLeadsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* زر حجز الطالب الجديد */}
             <Link
-                href="/admin/leads/new"
-                className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-              >
-                <i className="fa-solid fa-user-plus text-[11px]"></i>
-                <span>+ Book Student</span>
-              </Link>
+              href="/admin/leads/new"
+              className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            >
+              <i className="fa-solid fa-user-plus text-[11px]"></i>
+              <span>+ Book Student</span>
+            </Link>
+
+            {/* أزرار إدارة الكورسات والمقالات */}
+            <Link
+              href="/admin/courses/new"
+              className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+            >
+              <i className="fa-solid fa-plus text-[10px]"></i>
+              <span>+ Add Course</span>
+            </Link>
+
+            <Link
+              href="/admin/courses"
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+            >
+              <i className="fa-solid fa-book-open text-[11px]"></i>
+              <span>Manage Courses</span>
+            </Link>
+
+            <Link
+              href="/admin/articles"
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+            >
+              <i className="fa-solid fa-newspaper text-[11px]"></i>
+              <span>Articles Hub</span>
+            </Link>
+
+            {/* زر التحديث وتسجيل الخروج */}
             <button
               onClick={() => fetchLeads(adminKey)}
               disabled={loading}
               className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              title="Refresh Leads"
             >
               <i className={`fa-solid fa-rotate-right ${loading ? "fa-spin" : ""}`}></i>
-              <span>Refresh</span>
             </button>
+
             <button
               onClick={() => {
                 sessionStorage.removeItem("fazakkir_admin_key");
