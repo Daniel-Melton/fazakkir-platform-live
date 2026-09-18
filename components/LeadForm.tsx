@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 
 const COUNTRY_OPTIONS = [
   { flag: "🇺🇸", name: "USA", code: "+1" },
@@ -19,9 +20,27 @@ const COUNTRY_OPTIONS = [
 ];
 
 export default function LeadForm() {
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+
+  // قراءة بيانات الحاسبة القادمة من الرابط
+  const planClasses = searchParams.get("classes");
+  const planDuration = searchParams.get("duration");
+  const planPrice = searchParams.get("price");
+  const planDiscount = searchParams.get("discount");
+  const planStudentsParam = searchParams.get("students");
+
+  // التحقق هل العميل قادم من الحاسبة فعلياً أم يسجل مباشرة
+  const isFromCalculator = Boolean(planPrice && planClasses);
+
+  const planStudents = isFromCalculator && planStudentsParam ? Number(planStudentsParam) : 1;
+  const planDiscountValue = isFromCalculator && planDiscount ? planDiscount : null;
+  const planPriceValue = isFromCalculator && planPrice ? planPrice : null;
+  const planSummary = isFromCalculator 
+    ? `${planClasses}x/wk (${planDuration}m)` 
+    : "Standard Registration";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,6 +68,10 @@ export default function LeadForm() {
           countryCode,
           phoneNumber,
           courseName: courseChoice,
+          studentsCount: planStudents,
+          planName: isFromCalculator ? planSummary : "Direct Form",
+          discountApplied: planDiscountValue,
+          totalPrice: planPriceValue,
         }),
       });
 
@@ -64,12 +87,17 @@ export default function LeadForm() {
 
       // توجيه العميل لواتساب في نافذة جديدة (لتجنب تعليق الصفحة عند الرجوع)
       const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
-      const waMsg =
+      let waMsg =
         `*New Free Trial Booking - Fazakkir Academy*%0A%0A` +
         `*Student Name:* ${encodeURIComponent(fullName)}%0A` +
         `*Email:* ${encodeURIComponent(email)}%0A` +
         `*WhatsApp:* ${encodeURIComponent(fullPhone)}%0A` +
         `*Course Selected:* ${encodeURIComponent(courseChoice)}`;
+
+      // إضافة تفاصيل الخطة فقط إذا كان قادماً من الحاسبة
+      if (isFromCalculator && planPriceValue) {
+        waMsg += `%0A*Plan Selected:* ${encodeURIComponent(planSummary)} (${planStudents} students)%0A*Estimated Total:* ${encodeURIComponent(planPriceValue)} (Discount: ${encodeURIComponent(planDiscountValue || "None")})`;
+      }
 
       window.open(`https://wa.me/${waNumber}?text=${waMsg}`, "_blank");
     } catch (err: any) {
@@ -89,9 +117,17 @@ export default function LeadForm() {
         <h3 className="text-2xl font-extrabold text-emerald-950 tracking-tight">
           Claim Your 2 Free Classes
         </h3>
-        <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">
-          Instant confirmation via WhatsApp • No credit card
-        </p>
+        
+        {/* إظهار تفاصيل الخطة فقط للقادمين من الحاسبة */}
+        {isFromCalculator && planPriceValue ? (
+          <div className="mt-2 inline-block bg-emerald-50 border border-emerald-300 text-emerald-900 px-3 py-1 rounded-full text-xs font-bold">
+            Selected Plan: {planStudents} student(s) • {planPriceValue}/mo ({planDiscountValue || "Standard"})
+          </div>
+        ) : (
+          <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">
+            Instant confirmation via WhatsApp • No credit card
+          </p>
+        )}
       </div>
 
       {errorMsg && (

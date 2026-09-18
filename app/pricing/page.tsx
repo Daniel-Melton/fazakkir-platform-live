@@ -116,7 +116,7 @@ export default function PricingPage() {
             </div>
 
             <Link
-              href="/#registerForm"
+              href={`/?students=1&classes=2&duration=30&price=${currentCfg.symbol}${Math.round(2 * 4.33 * currentCfg.ratePerHalfHour)}&discount=None#registerForm`}
               className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-all"
             >
               Start Free Trial First
@@ -161,12 +161,12 @@ export default function PricingPage() {
               </ul>
             </div>
 
-            <Link
-              href="/#registerForm"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs text-center shadow-md transition-all"
-            >
-              Claim 2 Free Classes
-            </Link>
+              <Link
+                href={`/?students=1&classes=3&duration=30&price=${currentCfg.symbol}${Math.round(3 * 4.33 * currentCfg.ratePerHalfHour)}&discount=None#registerForm`}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs text-center shadow-md transition-all"
+              >
+                Claim 2 Free Classes
+              </Link>
           </div>
 
           {/* Plan 3: Intensive */}
@@ -203,12 +203,12 @@ export default function PricingPage() {
               </ul>
             </div>
 
-            <Link
-              href="/#registerForm"
-              className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-all"
-            >
-              Start Free Trial First
-            </Link>
+               <Link
+                  href={`/?students=1&classes=5&duration=30&price=${currentCfg.symbol}${Math.round(5 * 4.33 * currentCfg.ratePerHalfHour)}&discount=None#registerForm`}
+                  className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs text-center transition-all"
+                >
+                  Start Free Trial First
+                </Link>
           </div>
 
         </div>
@@ -350,7 +350,7 @@ export default function PricingPage() {
               </p>
 
               <Link
-                href="/#registerForm"
+                href={`/?students=${studentsCount}&classes=${classesPerWeek}&duration=${sessionDuration}&price=${currentCfg.symbol}${totalMonthlyPrice}&discount=${discountAmount > 0 ? '12% Sibling Discount' : 'None'}#registerForm`}
                 className="w-full block py-3.5 bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 text-slate-950 font-extrabold rounded-xl text-xs shadow-lg transition-all"
               >
                 Book 2 Free Assessment Classes

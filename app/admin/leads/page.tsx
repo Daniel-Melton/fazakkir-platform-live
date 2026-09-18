@@ -13,6 +13,10 @@ interface Lead {
   course_name: string;
   status: string;
   notes?: string;
+  plan_name?: string;
+  students_count?: number;
+  discount_applied?: string;
+  total_price?: string;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -31,6 +35,20 @@ export default function AdminLeadsPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
+  
+  // Modal State for Admin Manual Entry
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [newLead, setNewLead] = useState({
+    full_name: "",
+    email: "",
+    country_code: "+1",
+    phone_number: "",
+    course_name: "Quran Reading (Noorani Qaida)",
+    status: "Trial Booked",
+    plan_name: "3 Classes / Week",
+    students_count: 1,
+  });
 
   const fetchLeads = async (key: string) => {
     setLoading(true);
@@ -39,9 +57,7 @@ export default function AdminLeadsPage() {
       const res = await fetch(`/api/admin/leads?key=${encodeURIComponent(key)}`);
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to authenticate");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to authenticate");
 
       setLeads(data.leads || []);
       setIsAuthenticated(true);
@@ -89,6 +105,40 @@ export default function AdminLeadsPage() {
     }
   };
 
+  const handleCreateLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setModalLoading(true);
+    try {
+      const res = await fetch("/api/admin/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: adminKey,
+          ...newLead,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create lead");
+
+      setLeads((prev) => [data.lead, ...prev]);
+      setIsModalOpen(false);
+      setNewLead({
+        full_name: "",
+        email: "",
+        country_code: "+1",
+        phone_number: "",
+        course_name: "Quran Reading (Noorani Qaida)",
+        status: "Trial Booked",
+        plan_name: "3 Classes / Week",
+        students_count: 1,
+      });
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   const filteredLeads = leads.filter((l) => {
     const matchesSearch =
       l.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,7 +152,6 @@ export default function AdminLeadsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  // Login Screen
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
@@ -111,7 +160,7 @@ export default function AdminLeadsPage() {
             <i className="fa-solid fa-lock"></i>
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">Admin Portal</h1>
-          <p className="text-xs text-slate-500 mt-1 mb-6">Enter administrative key to manage academy inquiries</p>
+          <p className="text-xs text-slate-500 mt-1 mb-6">Enter administrative key to manage inquiries</p>
 
           {errorMsg && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl mb-4">
@@ -136,7 +185,6 @@ export default function AdminLeadsPage() {
               {loading ? "Authenticating..." : "Unlock Dashboard"}
             </button>
           </form>
-
           <Link href="/" className="inline-block mt-6 text-xs text-slate-400 hover:text-slate-600 font-medium">
             ← Back to Homepage
           </Link>
@@ -145,10 +193,8 @@ export default function AdminLeadsPage() {
     );
   }
 
-  // Dashboard Main Screen
   return (
     <div className="min-h-screen bg-slate-100">
-      {/* Top Header */}
       <header className="bg-[#022c22] text-white py-4 px-6 sticky top-0 z-50 border-b border-emerald-950 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -162,6 +208,13 @@ export default function AdminLeadsPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+                href="/admin/leads/new"
+                className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              >
+                <i className="fa-solid fa-user-plus text-[11px]"></i>
+                <span>+ Book Student</span>
+              </Link>
             <button
               onClick={() => fetchLeads(adminKey)}
               disabled={loading}
@@ -179,34 +232,10 @@ export default function AdminLeadsPage() {
             >
               Sign Out
             </button>
-            <Link
-                href="/admin/courses/new"
-                className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
-                >
-                <i className="fa-solid fa-plus text-[10px]"></i>
-                <span>Add Course</span>
-            </Link>
-
-            <Link
-                href="/admin/courses"
-                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
-              >
-                <i className="fa-solid fa-list-check"></i>
-                <span>Manage Courses</span>
-              </Link>
-
-              <Link
-              href="/admin/articles"
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
-            >
-              <i className="fa-solid fa-feather-pointed"></i>
-              <span>Articles Hub</span>
-            </Link>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Metrics Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -215,7 +244,7 @@ export default function AdminLeadsPage() {
             <div className="text-3xl font-extrabold text-slate-900 mt-1">{leads.length}</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">New Inquiries</span>
+            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">New</span>
             <div className="text-3xl font-extrabold text-blue-700 mt-1">
               {leads.filter((l) => (l.status || "New") === "New").length}
             </div>
@@ -247,7 +276,6 @@ export default function AdminLeadsPage() {
             />
           </div>
 
-          {/* Status Filter Chips */}
           <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
             {["ALL", "New", "Contacted", "Trial Booked", "Enrolled", "Cancelled"].map((st) => (
               <button
@@ -273,7 +301,7 @@ export default function AdminLeadsPage() {
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider font-semibold">
                   <th className="py-4 px-6">Student / Parent</th>
                   <th className="py-4 px-6">Contact & WhatsApp</th>
-                  <th className="py-4 px-6">Course</th>
+                  <th className="py-4 px-6">Course & Plan</th>
                   <th className="py-4 px-6">Date</th>
                   <th className="py-4 px-6">Status</th>
                   <th className="py-4 px-6 text-right">Quick Action</th>
@@ -317,6 +345,12 @@ export default function AdminLeadsPage() {
                           <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-200">
                             {lead.course_name || "General"}
                           </span>
+                          {lead.plan_name && (
+                            <div className="text-[11px] text-slate-500 mt-1 font-medium">
+                              Plan: {lead.plan_name} ({lead.students_count || 1} std)
+                              {lead.total_price && ` • ${lead.total_price}`}
+                            </div>
+                          )}
                         </td>
                         <td className="py-4 px-6 text-xs text-slate-500 whitespace-nowrap">
                           {lead.created_at
