@@ -20,18 +20,23 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-10 sm:pt-14 pb-16 sm:pb-20 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_-10%,#d1fae5_0%,#f8fafc_100%)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+        
+        {/* Soft Ambient Corner Glow (GroVest style) */}
+        <div className="absolute -top-24 -left-24 w-80 sm:w-96 h-80 sm:h-96 bg-gradient-to-br from-[#bef264]/40 via-[#86efac]/35 to-transparent rounded-full blur-3xl pointer-events-none z-0"></div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-5 sm:space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-800 text-xs font-bold shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-emerald-200 text-emerald-800 text-xs font-bold shadow-sm">
               <i className="fa-solid fa-star-and-crescent text-emerald-600"></i>
               <span>Official Al-Azhar Certified Tutors • 2 Free Classes</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.2]">
-              Master Quran, Tajweed & Arabic with{" "}
-              <span className="bg-gradient-to-r from-emerald-600 to-teal-900 bg-clip-text text-transparent">
+            {/* Typography Hierarchy: font-light for dark text, font-black for green part */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl text-slate-900 tracking-tight leading-[1.2]">
+              <span className="font-light">Master Quran, Tajweed & Arabic with </span>
+              <span className="font-black bg-gradient-to-r from-emerald-600 to-teal-800 bg-clip-text text-transparent drop-shadow-sm inline-block">
                 Personalized 1-on-1 Guidance
               </span>
             </h1>
@@ -345,8 +350,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. Courses Grid (Enhanced Hover & Subtle Feature Font) */}
-      {/* 5. Courses Grid (With Dynamic Syllabus Links & Action Buttons) */}
+      {/* 5. Courses Grid (Accredited Curriculums) */}
       <section id="courses" className="py-20 sm:py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
@@ -465,7 +469,6 @@ export default function Home() {
                   </ul>
                 </div>
 
-                {/* أزرار الكارت: زر المنهج وزر الحجز السريع */}
                 <div className="grid grid-cols-2 gap-2 pt-2">
                   {c.slug ? (
                     <Link
@@ -500,15 +503,15 @@ export default function Home() {
         </div>
 
         {/* View All Courses Button */}
-          <div className="mt-12 text-center">
-            <Link
-              href="/courses"
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-white border-2 border-emerald-600 text-emerald-950 hover:bg-emerald-600 hover:text-white font-extrabold text-sm shadow-sm hover:shadow-md transition-all group"
-            >
-              <span>Explore All Academy Courses</span>
-              <i className="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-            </Link>
-          </div>
+        <div className="mt-12 text-center">
+          <Link
+            href="/courses"
+            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-white border-2 border-emerald-600 text-emerald-950 hover:bg-emerald-600 hover:text-white font-extrabold text-sm shadow-sm hover:shadow-md transition-all group"
+          >
+            <span>Explore All Academy Courses</span>
+            <i className="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+          </Link>
+        </div>
       </section>
 
       {/* 6. FAQ Accordion */}
@@ -569,7 +572,6 @@ export default function Home() {
       </a>
 
       {/* Footer */}
-      {/* Footer */}
       <footer className="bg-[#022c22] text-[#a7f3d0] py-12 text-sm border-t border-emerald-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div>
@@ -584,27 +586,24 @@ export default function Home() {
 
           {/* Legal and Quick Links */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
-            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
-  <Link href="/pricing" className="hover:text-white transition-colors">
-    Tuition & Plans
-  </Link>
-  <Link href="/privacy-policy" className="hover:text-white transition-colors">
-    Privacy Policy
-  </Link>
-  <Link href="/terms" className="hover:text-white transition-colors">
-    Terms & Refunds
-  </Link>
-  <a
-  href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000"}?text=${encodeURIComponent("Salam Alaikum Fazakkir Academy Support, I have an inquiry.")}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="hover:text-white transition-colors"
->
-  Support
-</a>
-</div>
+            <Link href="/pricing" className="hover:text-white transition-colors">
+              Tuition & Plans
+            </Link>
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms & Refunds
+            </Link>
+            <a
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000"}?text=${encodeURIComponent("Salam Alaikum Fazakkir Academy Support, I have an inquiry.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              Support
+            </a>
           </div>
-          
 
           <p className="text-xs text-emerald-500">
             © 2026 Fazakkir Academy. All rights reserved.

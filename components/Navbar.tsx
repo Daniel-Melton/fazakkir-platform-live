@@ -7,9 +7,9 @@ import Image from "next/image";
 const NAV_ITEMS = [
   { label: "Why 1-on-1", href: "/#why-fazakkir" },
   { label: "Our Standards", href: "/#tutor-standards" },
-  { label: "Courses", href: "/courses" },
+  { label: "Courses", href: "/#courses" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Blog", href: "/blog" }, // <--- الرابط الجديد
+  { label: "Blog", href: "/blog" },
   { label: "FAQs", href: "/#faq" },
 ];
 
@@ -42,28 +42,35 @@ export default function Navbar() {
     <header className="sticky top-0 z-[999] bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm w-full">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
         {/* Brand Logo */}
-        {/* <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group">
-          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-900 flex items-center justify-center text-white shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform text-base sm:text-lg">
-            <i className="fa-solid fa-kaaba"></i>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg sm:text-2xl font-extrabold text-emerald-950 tracking-tight">Fazakkir</span>
-              <span className="font-amiri text-sm sm:text-lg font-bold text-emerald-600 leading-none">فَذَكِّرْ</span>
-            </div>
-            <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 tracking-wider uppercase">Academy</span>
-          </div>
-        </Link> */}
-          <div className="relative w-11 h-11 flex-shrink-0 group-hover:scale-105 transition-transform">
+        {/* Brand Logo */}
+        <Link href="/" className="flex items-center gap-3.5 flex-shrink-0 group py-1">
+          {/* حاوية الرمز الطولي بأبعاد متناسقة دون انكماش */}
+          <div className="relative h-16 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
             <Image
-              src="/logo.png" // أو /logo.svg حسب امتداد ملفك
-              alt="Fazakkir Academy Logo"
-              width={44}
-              height={44}
-              className="w-full h-full object-contain"
+              src="/logo.png"
+              alt="Fazakkir Logo"
+              fill
+              sizes="64px"
+              className="object-contain"
               priority
             />
           </div>
+
+          {/* نصوص اسم الأكاديمية المصاحبة للرمز */}
+          {/* <div className="flex flex-col justify-center select-none">
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-none">
+                Fazakkir
+              </span>
+              <span className="font-serif text-base sm:text-lg md:text-xl font-bold text-emerald-600 leading-none">
+                فَذَكِّرْ
+              </span>
+            </div>
+            <span className="text-[10px] sm:text-[11px] font-extrabold tracking-[0.25em] text-emerald-800 uppercase mt-1 leading-none">
+              Academy
+            </span>
+          </div> */}
+        </Link>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
