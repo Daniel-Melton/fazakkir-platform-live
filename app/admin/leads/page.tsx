@@ -380,7 +380,17 @@ export default function AdminLeadsPage() {
                               {lead.total_price && ` • ${lead.total_price}`}
                             </div>
                           )}
+
+                          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 flex-wrap">
+                            <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
+                              {lead.preferred_time === "Morning" ? "☀️ Morning" : "🌙 Evening"}
+                            </span>
+                            <span className="text-slate-400 text-[11px]">
+                              ({lead.timezone || "UTC"})
+                            </span>
+                          </div>
                         </td>
+                        
                         <td className="py-4 px-6 text-xs text-slate-500 whitespace-nowrap">
                           {lead.created_at
                             ? new Date(lead.created_at).toLocaleDateString("en-US", {

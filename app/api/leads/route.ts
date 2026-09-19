@@ -14,11 +14,14 @@ export async function POST(req: Request) {
     const phoneNumber = body.phoneNumber || body.phone || "";
     const courseName = body.courseName || body.preferredCourse;
 
+    // الحقول الجديدة للتوقيت المفضل والمنطقة الزمنية
+    const preferredTime = body.preferredTime || body.preferred_time || "Evening";
+    const timezone = body.timezone || "UTC";
+
     // حقول حاسبة الأسعار والخصومات
     const studentsCount = Number(body.studentsCount || body.student_count || 1);
     const planName = body.planName || "Standard";
     const discountApplied = body.discountApplied || "0%";
-    // const discountApplied = body.discountApplied || "0%";
 
     // استخراج العملة والأرقام بشكل مستقل
     const rawPriceStr = body.totalPrice ? String(body.totalPrice) : "";
@@ -40,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. حفظ بيانات الطالب في Supabase مع مطابقة كامل الأعمدة
+    // 1. حفظ بيانات الطالب في Supabase مع مطابقة كامل الأعمدة وإضافة التوقيت
     const { data: leadData, error: dbError } = await supabase
       .from("leads")
       .insert([
@@ -60,6 +63,8 @@ export async function POST(req: Request) {
           discount_applied: discountApplied,
           total_price: totalPrice,
           currency: currency,
+          preferred_time: preferredTime,
+          timezone: timezone,
           status: "New",
         },
       ])
@@ -74,7 +79,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. إرسال الإشعار البريدي متضمناً تفاصيل الخصم والباقة
+    // 2. إرسال الإشعار البريدي متضمناً تفاصيل الخصم والباقة والتوقيت
     const targetEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "lonelywolf1452@gmail.com";
 
     if (process.env.RESEND_API_KEY) {
@@ -105,6 +110,14 @@ export async function POST(req: Request) {
               <tr>
                 <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">Plan / Students:</td>
                 <td style="padding: 8px 0; color: #334155;">${planName} (${studentsCount} Student/s)</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">Preferred Slot:</td>
+                <td style="padding: 8px 0; color: #334155;">${preferredTime}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold; color: #1e293b;">Timezone:</td>
+                <td style="padding: 8px 0; color: #334155;">${timezone}</td>
               </tr>
               ${
                 discountApplied !== "0%"

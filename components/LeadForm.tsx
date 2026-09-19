@@ -56,6 +56,12 @@ function LeadFormContent() {
     const phoneNumber = (formData.get("phoneNumber") as string)?.trim();
     const courseChoice = formData.get("courseChoice") as string;
 
+    // 1. قراءة التوقيت المفضل من الفورم
+    const preferredTime = (formData.get("preferred_time") as string) || "Evening";
+
+    // 2. التقاط المنطقة الزمنية للمتصفح تلقائياً
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
     const fullPhone = `${countryCode} ${phoneNumber}`;
 
     try {
@@ -72,6 +78,8 @@ function LeadFormContent() {
           planName: isFromCalculator ? planSummary : "Direct Form",
           discountApplied: planDiscountValue,
           totalPrice: planPriceValue,
+          preferredTime,
+          timezone: userTimezone,
         }),
       });
 
@@ -82,7 +90,6 @@ function LeadFormContent() {
       }
 
       formRef.current?.reset();
-      setLoading(false);
 
       const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
       let waMsg =
@@ -90,7 +97,9 @@ function LeadFormContent() {
         `*Student Name:* ${encodeURIComponent(fullName)}%0A` +
         `*Email:* ${encodeURIComponent(email)}%0A` +
         `*WhatsApp:* ${encodeURIComponent(fullPhone)}%0A` +
-        `*Course Selected:* ${encodeURIComponent(courseChoice)}`;
+        `*Course Selected:* ${encodeURIComponent(courseChoice)}%0A` +
+        `*Preferred Slot:* ${encodeURIComponent(preferredTime)}%0A` +
+        `*Timezone:* ${encodeURIComponent(userTimezone)}`;
 
       if (isFromCalculator && planPriceValue) {
         waMsg += `%0A*Plan Selected:* ${encodeURIComponent(planSummary)} (${planStudents} students)%0A*Estimated Total:* ${encodeURIComponent(planPriceValue)} (Discount: ${encodeURIComponent(planDiscountValue || "None")})`;
@@ -99,6 +108,7 @@ function LeadFormContent() {
       window.open(`https://wa.me/${waNumber}?text=${waMsg}`, "_blank");
     } catch (err: any) {
       setErrorMsg(err.message || "Something went wrong, please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -219,6 +229,34 @@ function LeadFormContent() {
               <option value="Arabic for Non-Arabs">Arabic for Non-Arabs</option>
               <option value="Islamic Studies for Kids">Islamic Studies for Kids</option>
             </select>
+          </div>
+        </div>
+
+        {/* Preferred Study Time */}
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-slate-700">
+            Preferred Time Slot
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex items-center justify-center gap-2 p-2.5 border rounded-lg cursor-pointer text-xs font-medium hover:bg-emerald-50 transition border-slate-200 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60 has-[:checked]:text-emerald-900">
+              <input
+                type="radio"
+                name="preferred_time"
+                value="Morning"
+                defaultChecked
+                className="text-emerald-600 focus:ring-emerald-500"
+              />
+              ☀️ Morning
+            </label>
+            <label className="flex items-center justify-center gap-2 p-2.5 border rounded-lg cursor-pointer text-xs font-medium hover:bg-emerald-50 transition border-slate-200 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/60 has-[:checked]:text-emerald-900">
+              <input
+                type="radio"
+                name="preferred_time"
+                value="Evening"
+                className="text-emerald-600 focus:ring-emerald-500"
+              />
+              🌙 Evening
+            </label>
           </div>
         </div>
 
