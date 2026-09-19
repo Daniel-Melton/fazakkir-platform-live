@@ -19,6 +19,7 @@ interface Lead {
   total_price?: string;
   preferred_time?: string | null;
   timezone?: string | null;
+  [key: string]: any;
 }
 
 const STATUS_COLORS: Record<string, string> = {
