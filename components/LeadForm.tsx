@@ -23,6 +23,7 @@ function LeadFormContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   // قراءة بيانات الحاسبة القادمة من الرابط
@@ -46,6 +47,7 @@ function LeadFormContent() {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
+    setSuccessMsg(false);
 
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -61,8 +63,6 @@ function LeadFormContent() {
 
     // 2. التقاط المنطقة الزمنية للمتصفح تلقائياً
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-
-    const fullPhone = `${countryCode} ${phoneNumber}`;
 
     try {
       const response = await fetch("/api/leads", {
@@ -89,23 +89,11 @@ function LeadFormContent() {
         throw new Error(data.error || "Failed to submit lead");
       }
 
+      // تفريغ الحقول وإظهار رسالة النجاح
       formRef.current?.reset();
+      setSuccessMsg(true);
 
-      const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
-      let waMsg =
-        `*New Free Trial Booking - Fazakkir Academy*%0A%0A` +
-        `*Student Name:* ${encodeURIComponent(fullName)}%0A` +
-        `*Email:* ${encodeURIComponent(email)}%0A` +
-        `*WhatsApp:* ${encodeURIComponent(fullPhone)}%0A` +
-        `*Course Selected:* ${encodeURIComponent(courseChoice)}%0A` +
-        `*Preferred Slot:* ${encodeURIComponent(preferredTime)}%0A` +
-        `*Timezone:* ${encodeURIComponent(userTimezone)}`;
-
-      if (isFromCalculator && planPriceValue) {
-        waMsg += `%0A*Plan Selected:* ${encodeURIComponent(planSummary)} (${planStudents} students)%0A*Estimated Total:* ${encodeURIComponent(planPriceValue)} (Discount: ${encodeURIComponent(planDiscountValue || "None")})`;
-      }
-
-      window.open(`https://wa.me/${waNumber}?text=${waMsg}`, "_blank");
+      // ملاحظة: تم حذف window.open الخاص بالواتساب بالكامل هنا
     } catch (err: any) {
       setErrorMsg(err.message || "Something went wrong, please try again.");
     } finally {
@@ -131,10 +119,32 @@ function LeadFormContent() {
           </div>
         ) : (
           <p className="text-xs md:text-sm text-slate-500 mt-1 font-medium">
-            Instant confirmation via WhatsApp • No credit card
+            Instant booking confirmation • No credit card required
           </p>
         )}
       </div>
+
+      {/* رسالة النجاح المنبثقة داخل الفورم */}
+      {successMsg && (
+        <div className="mb-5 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">
+            <i className="fa-solid fa-check"></i>
+          </div>
+          <div className="flex-1 text-xs md:text-sm">
+            <p className="font-bold text-emerald-950 mb-0.5">Booking Received Successfully!</p>
+            <p className="text-emerald-700 leading-relaxed">
+              Thank you! Your request has been confirmed. Our educational supervisor will contact you shortly to arrange your free trial session.
+            </p>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setSuccessMsg(false)} 
+            className="text-emerald-500 hover:text-emerald-800 text-xs p-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
@@ -179,7 +189,7 @@ function LeadFormContent() {
 
         <div>
           <label htmlFor="phoneNumber" className="block text-xs font-bold text-emerald-950 mb-1.5">
-            WhatsApp Number
+            Phone / WhatsApp Number
           </label>
           <div className="grid grid-cols-[145px_1fr] gap-2">
             <select
@@ -260,27 +270,28 @@ function LeadFormContent() {
           </div>
         </div>
 
+        {/* زر الحجز التلقائي المباشر */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-2 bg-[#25d366] hover:bg-[#1eb954] text-white py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#25d366]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+          className="w-full mt-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
               <i className="fa-solid fa-spinner fa-spin text-base"></i>
-              <span>Sending...</span>
+              <span>Processing Booking...</span>
             </>
           ) : (
             <>
-              <i className="fa-brands fa-whatsapp text-lg"></i>
-              <span>Get Free Trial on WhatsApp</span>
+              <i className="fa-solid fa-calendar-check text-base"></i>
+              <span>Book Your Free Trial Now</span>
             </>
           )}
         </button>
 
         <p className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5 pt-1">
           <i className="fa-solid fa-shield-halved text-emerald-600 text-xs"></i>
-          <span>Zero obligation • Confidential data</span>
+          <span>Zero obligation • 100% Free trial classes</span>
         </p>
       </form>
     </div>

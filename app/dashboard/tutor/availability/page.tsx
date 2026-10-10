@@ -1,192 +1,380 @@
 "use client";
-import { createClient } from "@/lib/supabase/client";
-import React, { useState, useEffect } from "react";
 
-interface SlotItem {
-  day_of_week: number;
-  start_time_utc: string;
-  end_time_utc: string;
-  is_active: boolean;
+import React, { useEffect, useState, useCallback } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+
+interface TimeSlot {
+  start_time: string;
+  end_time: string;
 }
 
-const DAYS = [
-  { id: 0, name: "الأحد" },
-  { id: 1, name: "الإثنين" },
-  { id: 2, name: "الثلاثاء" },
-  { id: 3, name: "الأربعاء" },
-  { id: 4, name: "الخميس" },
-  { id: 5, name: "الجمعة" },
-  { id: 6, name: "السبت" },
+interface DayAvailability {
+  day_of_week: number; // 0 = Sunday, 1 = Monday, ...
+  is_available: boolean;
+  slots: TimeSlot[];
+}
+
+const DAYS_NAMES = [
+  "الأحد",
+  "الاثنين",
+  "الثلاثاء",
+  "الأربعاء",
+  "الخميس",
+  "الجمعة",
+  "السبت",
 ];
 
 export default function TutorAvailabilityPage() {
-  const supabase = createClient();
-  const [slots, setSlots] = useState<SlotItem[]>([]);
+  const [availability, setAvailability] = useState<DayAvailability[]>([]);
+  const [selectedDay, setSelectedDay] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [token, setToken] = useState("");
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const fetchAvailability = useCallback(async (authToken: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/v1/tutors/me/availability", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (data.success && data.data?.availability) {
+        setAvailability(data.data.availability);
+      } else {
+        // تهيئة افتراضية لجميع أيام الأسبوع في حال لم تكن مسجلة مسبقاً
+        const initialDays: DayAvailability[] = Array.from({ length: 7 }, (_, i) => ({
+          day_of_week: i,
+          is_available: false,
+          slots: [],
+        }));
+        setAvailability(initialDays);
+      }
+    } catch (err) {
+      console.error("Failed to fetch availability:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const res = await fetch("/api/v1/tutors/me/availability");
-        const json = await res.json();
-        if (json.success && json.data?.slots) {
-          const formatted = json.data.slots.map((s: { day_of_week: number; start_time_utc: string; end_time_utc: string; is_active: boolean }) => ({
-            day_of_week: s.day_of_week,
-            start_time_utc: s.start_time_utc.slice(0, 5),
-            end_time_utc: s.end_time_utc.slice(0, 5),
-            is_active: s.is_active,
-          }));
-          setSlots(formatted);
-        }
-      } catch (err) {
-        console.error("Failed to load availability:", err);
-      } finally {
+    async function init() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        setToken(session.access_token);
+        fetchAvailability(session.access_token);
+      } else {
         setLoading(false);
       }
     }
-    loadData();
-  }, []);
+    init();
+  }, [supabase, fetchAvailability]);
 
-  const addSlot = (dayId: number) => {
-    setSlots([
-      ...slots,
-      {
-        day_of_week: dayId,
-        start_time_utc: "16:00",
-        end_time_utc: "20:00",
-        is_active: true,
-      },
-    ]);
+  const currentDayData = availability.find((d) => d.day_of_week === selectedDay) || {
+    day_of_week: selectedDay,
+    is_available: false,
+    slots: [],
   };
 
-  const removeSlot = (index: number) => {
-    setSlots(slots.filter((_, i) => i !== index));
+  const handleToggleDayAvailable = (isAvailable: boolean) => {
+    setAvailability((prev) =>
+      prev.map((d) =>
+        d.day_of_week === selectedDay ? { ...d, is_available: isAvailable } : d
+      )
+    );
   };
 
-  const updateSlot = (index: number, key: keyof SlotItem, value: unknown) => {
-    const updated = [...slots];
-    updated[index] = { ...updated[index], [key]: value };
-    setSlots(updated);
+  const handleAddSlot = () => {
+    const defaultStart = "09:00";
+    const defaultEnd = "17:00";
+    setAvailability((prev) =>
+      prev.map((d) =>
+        d.day_of_week === selectedDay
+          ? {
+              ...d,
+              is_available: true,
+              slots: [...d.slots, { start_time: defaultStart, end_time: defaultEnd }],
+            }
+          : d
+      )
+    );
+  };
+
+  const handleRemoveSlot = (index: number) => {
+    setAvailability((prev) =>
+      prev.map((d) =>
+        d.day_of_week === selectedDay
+          ? {
+              ...d,
+              slots: d.slots.filter((_, i) => i !== index),
+            }
+          : d
+      )
+    );
+  };
+
+  const handleSlotChange = (index: number, field: "start_time" | "end_time", value: string) => {
+    setAvailability((prev) =>
+      prev.map((d) =>
+        d.day_of_week === selectedDay
+          ? {
+              ...d,
+              slots: d.slots.map((s, i) => (i === index ? { ...s, [field]: value } : s)),
+            }
+          : d
+      )
+    );
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    setMessage(null);
-
+    if (!token) return;
     try {
+      setSaving(true);
+      setMessage(null);
       const res = await fetch("/api/v1/tutors/me/availability", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(slots),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ availability }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "فشل الحفظ");
-
-      setMessage({ text: "تم حفظ أوقات التفرغ الأسبوعية بنجاح", type: "success" });
-    } catch (err: unknown) {
-      const text = err instanceof Error ? err.message : "حدث خطأ أثناء الحفظ";
-      setMessage({ text, type: "error" });
+      if (res.ok && data.success) {
+        setMessage({ type: "success", text: "تم حفظ أوقات التوفر بنجاح" });
+      } else {
+        setMessage({ type: "error", text: data.error || "حدث خطأ أثناء الحفظ" });
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      setMessage({ type: "error", text: "فشل الاتصال بالخادم" });
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return <div className="p-8 text-center text-xs text-gray-500">جاري تحميل جدول التفرغ...</div>;
-  }
+  // إحصائيات سريعة للبطاقات
+  const activeDaysCount = availability.filter((d) => d.is_available && d.slots.length > 0).length;
+  const totalSlotsCount = availability.reduce((acc, d) => acc + (d.is_available ? d.slots.length : 0), 0);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 dir-rtl text-right">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">أوقات التفرغ الأسبوعية</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            حدد الفترات الزمنية المتاحة لديك لتمكين الطلاب من حجز الحصص دون تعارض.
-          </p>
+    <div className="space-y-8">
+      {/* 1. صف البطاقات الإحصائية العلوية */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">أيام العمل المحددة</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">الأيام النشطة للتدريس أسبوعياً</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {activeDaysCount} / 7
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100/80">
+              أيام
+            </span>
+          </div>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-xl transition disabled:opacity-50"
-        >
-          {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
-        </button>
+
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">الفترات المتاحة</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">إجمالي نوافذ التفرغ المفتوحة</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {totalSlotsCount}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/80">
+              فترة
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">حالة التوفر العام</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">جاهزية الحساب لاستقبال الطلاب</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-xl font-black text-slate-900 tracking-tight">
+              {activeDaysCount > 0 ? "جاهز للتسكين" : "غير متاح"}
+            </span>
+            <span
+              className={`text-[11px] font-bold px-3 py-1 rounded-full border ${
+                activeDaysCount > 0
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-100/80"
+                  : "bg-amber-50 text-amber-600 border-amber-100/80"
+              }`}
+            >
+              {activeDaysCount > 0 ? "نشط" : "معلق"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3 text-xs rounded-lg border ${
-            message.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-100"
-              : "bg-rose-50 text-rose-800 border-rose-100"
-          }`}
-        >
-          {message.text}
+      {/* 2. منطقة الإعداد وتحديد الساعات */}
+      <div className="border border-slate-100/90 rounded-[32px] p-6 sm:p-8 bg-white shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">إدارة أوقات التوفر الأسبوعية</h2>
+            <p className="text-xs text-slate-400 mt-0.5">حدد الساعات المناسبة لك بتوقيت UTC لتسكين حصص الطلاب التجريبية والأساسية</p>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving || loading}
+            className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition shadow-sm disabled:opacity-50"
+          >
+            {saving ? "جاري الحفظ..." : "حفظ التغييرات ✓"}
+          </button>
         </div>
-      )}
 
-      <div className="space-y-4">
-        {DAYS.map((day) => {
-          const daySlots = slots
-            .map((slot, index) => ({ slot, index }))
-            .filter((item) => item.slot.day_of_week === day.id);
+        {message && (
+          <div
+            className={`p-3.5 rounded-2xl text-xs font-bold border ${
+              message.type === "success"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-rose-50 text-rose-700 border-rose-200"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
 
-          return (
-            <div key={day.id} className="p-4 bg-white border border-gray-100 rounded-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-xs text-gray-800">{day.name}</span>
-                <button
-                  type="button"
-                  onClick={() => addSlot(day.id)}
-                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  + إضافة فترة
-                </button>
+        {loading ? (
+          <div className="py-20 text-center text-xs text-slate-400">جاري تحميل جدول التوفر...</div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* اختيار اليوم عبر أزرار كبسولية */}
+            <div className="lg:col-span-4 space-y-2">
+              <span className="text-xs font-bold text-slate-400 block mb-2">أيام الأسبوع:</span>
+              <div className="flex flex-col gap-1.5">
+                {DAYS_NAMES.map((name, index) => {
+                  const dayData = availability.find((d) => d.day_of_week === index);
+                  const isDayAvailable = dayData?.is_available && (dayData?.slots.length || 0) > 0;
+                  const isSelected = selectedDay === index;
+
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setSelectedDay(index)}
+                      className={`flex items-center justify-between p-3.5 rounded-2xl text-xs font-bold transition border ${
+                        isSelected
+                          ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                          : "bg-slate-50/50 hover:bg-slate-50 text-slate-700 border-slate-100"
+                      }`}
+                    >
+                      <span className="text-sm">{name}</span>
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full ${
+                          isSelected
+                            ? "bg-white/20 text-white"
+                            : isDayAvailable
+                            ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                            : "bg-slate-100 text-slate-400"
+                        }`}
+                      >
+                        {isDayAvailable ? "متاح" : "عطلة"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* تحديد الفترات لليوم المختار */}
+            <div className="lg:col-span-8 p-6 rounded-[28px] border border-slate-100 bg-slate-50/40 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900">
+                    أوقات يوم {DAYS_NAMES[selectedDay]}
+                  </h3>
+                  <span className="text-[11px] text-slate-400">توقيت UTC</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-semibold text-slate-600 cursor-pointer">
+                    متاح في هذا اليوم:
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={currentDayData.is_available}
+                    onChange={(e) => handleToggleDayAvailable(e.target.checked)}
+                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
+                  />
+                </div>
               </div>
 
-              {daySlots.length === 0 ? (
-                <div className="text-[11px] text-gray-400">غير متاح في هذا اليوم</div>
+              {!currentDayData.is_available ? (
+                <div className="py-12 text-center text-xs text-slate-400">
+                  تم تحديد هذا اليوم كيوم عطلة. فعّل خيار التوفر بالأعلى لإضافة ساعات العمل.
+                </div>
               ) : (
-                <div className="space-y-2">
-                  {daySlots.map(({ slot, index }) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <span>من:</span>
-                        <input
-                          type="time"
-                          value={slot.start_time_utc}
-                          onChange={(e) => updateSlot(index, "start_time_utc", e.target.value)}
-                          className="border border-gray-200 rounded p-1 text-xs outline-none"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <span>إلى:</span>
-                        <input
-                          type="time"
-                          value={slot.end_time_utc}
-                          onChange={(e) => updateSlot(index, "end_time_utc", e.target.value)}
-                          className="border border-gray-200 rounded p-1 text-xs outline-none"
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removeSlot(index)}
-                        className="text-rose-500 hover:text-rose-700 text-xs px-2"
-                      >
-                        حذف
-                      </button>
+                <div className="space-y-4">
+                  {currentDayData.slots.length === 0 ? (
+                    <div className="py-10 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-white">
+                      لا توجد فترات عمل محددة لهذا اليوم. أضف فترة جديدة بالأسفل.
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-2.5">
+                      {currentDayData.slots.map((slot, sIdx) => (
+                        <div
+                          key={sIdx}
+                          className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-xs"
+                        >
+                          <span className="text-xs font-bold text-slate-400 w-6 text-center">
+                            #{sIdx + 1}
+                          </span>
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-[11px] text-slate-400">من:</span>
+                            <input
+                              type="time"
+                              value={slot.start_time}
+                              onChange={(e) => handleSlotChange(sIdx, "start_time", e.target.value)}
+                              className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none font-bold text-slate-800"
+                            />
+                            <span className="text-[11px] text-slate-400 mr-2">إلى:</span>
+                            <input
+                              type="time"
+                              value={slot.end_time}
+                              onChange={(e) => handleSlotChange(sIdx, "end_time", e.target.value)}
+                              className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 outline-none font-bold text-slate-800"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSlot(sIdx)}
+                            className="w-8 h-8 rounded-xl text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 flex items-center justify-center font-bold text-xs transition"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleAddSlot}
+                    className="w-full py-2.5 rounded-xl border border-dashed border-slate-300 hover:border-slate-900 text-slate-600 hover:text-slate-900 text-xs font-bold transition bg-white"
+                  >
+                    + إضافة فترة عمل جديدة
+                  </button>
                 </div>
               )}
             </div>
-          );
-        })}
+
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,174 +1,131 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { UserRole } from "@/types/database";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-  const [role, setRole] = useState<UserRole | null>(null);
-  const [token, setToken] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const cookieStore = await cookies();
 
-  const pathname = usePathname();
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (!session) {
-          setLoading(false);
-          return;
-        }
-
-        setToken(session.access_token);
-
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role, full_name")
-          .eq("id", session.user.id)
-          .single();
-
-        if (profile) {
-          setRole(profile.role as UserRole);
-          setUserName(profile.full_name || "المعلم");
-        }
-      } catch (err) {
-        console.error("Failed to load user profile in layout:", err);
-      } finally {
-        setLoading(false);
-      }
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+      },
     }
+  );
 
-    loadUser();
-  }, [supabase]);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  };
+  let role = "academic_supervisor";
+  let fullName = "المستخدم";
 
-  const isSupervisorOrAdmin =
-    role === "super_admin" || role === "academic_supervisor";
+  if (session?.user?.id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, full_name")
+      .eq("id", session.user.id)
+      .maybeSingle();
 
-  const getRoleLabel = (r: UserRole | null) => {
-    switch (r) {
-      case "super_admin":
-        return "مدير النظام";
+    if (profile) {
+      role = profile.role;
+      fullName = profile.full_name || fullName;
+    }
+  }
+
+  // تخصيص تبويبات التنقل العلوية الكبسولية بحسب دور المستخدم
+  const navTabs = (() => {
+    switch (role) {
       case "academic_supervisor":
-        return "مشرف أكاديمي";
+      case "super_admin":
+        return [
+          { label: "تسكين الطلاب", href: "/dashboard/supervisor/enrollments" },
+          { label: "طلبات التعديل", href: "/dashboard/supervisor/reschedule" },
+        ];
       case "tutor":
-        return "معلم";
-      case "parent_student":
-        return "ولي أمر / طالب";
+        return [
+          { label: "أوقات التوفر", href: "/dashboard/tutor/availability" },
+          { label: "جدول حصصي", href: "/dashboard/sessions" },
+        ];
+      case "parent":
+        return [
+          { label: "حصص الأبناء", href: "/dashboard/parent" },
+          { label: "جدول المواعيد", href: "/dashboard/sessions" },
+        ];
       default:
-        return "جاري التحميل...";
+        return [{ label: "الرئيسية", href: "/dashboard" }];
     }
-  };
+  })();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col dir-rtl text-right">
-      {/* الشريط العلوي للوحة التحكم */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* الجانب الأيمن: الشعار والروابط */}
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard/sessions" className="flex items-center gap-2">
-              <span className="text-xl font-extrabold text-emerald-600">فذكّر</span>
-              <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-semibold border border-emerald-200">
-                البوابة
+    <div className="min-h-screen bg-[#F4F5F9] p-3 sm:p-6 lg:p-8 dir-rtl text-right font-sans text-slate-800 antialiased selection:bg-slate-900 selection:text-white">
+      {/* الحاوية البيضاء العائمة الموحدة بكافة البوابات */}
+      <div className="max-w-[1440px] mx-auto bg-white rounded-[32px] shadow-sm border border-slate-200/60 p-5 sm:p-8 min-h-[calc(100vh-4rem)] flex flex-col">
+        {/* شريط التنقل العلوي الكبسولي المرجعي */}
+        <header className="flex flex-col md:flex-row items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          {/* الشعار واسم المنصة */}
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-lg shadow-sm">
+              ف
+            </div>
+            <div>
+              <span className="text-lg font-black tracking-tight text-slate-900 block leading-tight">
+                أكاديمية فذكّر
               </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-1">
-              <Link
-                href="/dashboard/sessions"
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
-                  pathname === "/dashboard/sessions"
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "text-gray-600 hover:text-emerald-600 hover:bg-gray-50"
-                }`}
-              >
-                جدول الحصص
-              </Link>
-
-              {role === "tutor" && (
-                <Link
-                  href="/dashboard/tutor/availability"
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
-                    pathname === "/dashboard/tutor/availability"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "text-gray-600 hover:text-emerald-600 hover:bg-gray-50"
-                  }`}
-                >
-                  أوقات التفرغ
-                </Link>
-              )}
-
-              {isSupervisorOrAdmin && (
-                <>
-                  <Link
-                    href="/dashboard/supervisor/reschedule"
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
-                      pathname === "/dashboard/supervisor/reschedule"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "text-gray-600 hover:text-emerald-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    طلبات إعادة الجدولة
-                  </Link>
-
-                  <Link
-                    href="/dashboard/supervisor/enrollments"
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
-                      pathname === "/dashboard/supervisor/enrollments"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "text-gray-600 hover:text-emerald-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    تسكين الطلاب
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-
-          {/* الجانب الأيسر: الإشعارات والمستخدم */}
-          <div className="flex items-center gap-4">
-            {token && <NotificationBell authToken={token} />}
-
-            <div className="flex flex-col text-left">
-              <span className="text-xs font-bold text-gray-800">
-                {userName || "أحمد محمود"}
-              </span>
-              <span className="text-[10px] text-emerald-600 font-medium">
-                {getRoleLabel(role)}
+              <span className="text-[10px] text-slate-400 font-medium">
+                تعليم القرآن واللغة العربية
               </span>
             </div>
+          </Link>
 
-            <button
-              onClick={handleLogout}
-              className="text-xs text-gray-500 hover:text-rose-600 bg-gray-100 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition"
-            >
-              خروج
-            </button>
+          {/* كبسولات التنقل */}
+          <nav className="flex items-center bg-slate-50 p-1.5 rounded-full border border-slate-100 text-xs font-semibold gap-1">
+            {navTabs.map((tab) => (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className="px-5 py-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-all font-bold"
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* الأدوات العلوية: جرس الإشعارات والأفاتار */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center hover:bg-slate-50 transition">
+              <NotificationBell authToken={session?.access_token || ""} />
+            </div>
+
+            <div className="flex items-center gap-2.5 pr-2 border-r border-slate-100">
+              <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                {fullName.charAt(0)}
+              </div>
+              <div className="hidden sm:block text-right">
+                <div className="text-xs font-bold text-slate-900 leading-tight">
+                  {fullName}
+                </div>
+                <div className="text-[10px] text-slate-400 font-medium">
+                  {role === "academic_supervisor" ? "مشرف أكاديمي" : role === "tutor" ? "معلم" : "ولي أمر"}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* المحتوى الرئيسي */}
-      <main className="flex-1 py-8">{children}</main>
+        {/* مساحة الصفحات الداخلية */}
+        <div className="flex-1 mt-6">{children}</div>
+      </div>
     </div>
   );
 }

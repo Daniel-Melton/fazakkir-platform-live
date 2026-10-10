@@ -1,61 +1,55 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createBrowserClient } from "@supabase/ssr";
 
-interface RescheduleItem {
+interface RescheduleRequest {
   id: string;
   session_id: string;
+  requested_by_role: "student" | "tutor" | "academic_supervisor";
+  requested_by_id: string;
   reason: string;
+  proposed_slot_utc: string;
   status: "pending" | "approved" | "rejected";
-  supervisor_notes: string | null;
+  admin_notes: string | null;
   created_at: string;
-  requester?: { full_name: string; email: string; role: string } | null;
   session?: {
-    id: string;
     scheduled_at_utc: string;
-    duration_minutes: number;
-    tutor?: { full_name: string; email: string } | null;
-    student?: { student_name: string; level: string } | null;
-  } | null;
+    students?: {
+      student_name: string;
+    };
+    tutors?: {
+      profiles?: {
+        full_name: string;
+      };
+    };
+  };
 }
 
 export default function SupervisorReschedulePage() {
-  const supabase = createClient();
-  const [requests, setRequests] = useState<RescheduleItem[]>([]);
-  const [token, setToken] = useState<string>("");
+  const [requests, setRequests] = useState<RescheduleRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("pending");
+  const [token, setToken] = useState("");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  // نافذة اتخاذ القرار
-  const [activeRequest, setActiveRequest] = useState<RescheduleItem | null>(null);
-  const [decision, setDecision] = useState<"approved" | "rejected">("approved");
-  const [newDate, setNewDate] = useState("");
-  const [supervisorNotes, setSupervisorNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-  const fetchRequests = useCallback(async (authToken: string, statusFilter: string) => {
+  const fetchRequests = useCallback(async (authToken: string) => {
     try {
       setLoading(true);
-      const url = statusFilter
-        ? `/api/v1/reschedule-requests?status=${statusFilter}`
-        : "/api/v1/reschedule-requests";
-      const res = await fetch(url, {
+      const res = await fetch("/api/v1/reschedule-requests", {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       const data = await res.json();
-      
-      // معالجة البيانات سواء كانت مصفوفة مباشرة أو داخل كائن requests
-      if (data.success) {
-        if (Array.isArray(data.data)) {
-          setRequests(data.data);
-        } else if (Array.isArray(data.data?.requests)) {
-          setRequests(data.data.requests);
-        }
+      if (data.success && data.data?.requests) {
+        setRequests(data.data.requests);
       }
     } catch (err) {
-      console.error("Failed to load requests:", err);
+      console.error("Failed to load reschedule requests:", err);
     } finally {
       setLoading(false);
     }
@@ -63,274 +57,287 @@ export default function SupervisorReschedulePage() {
 
   useEffect(() => {
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         setToken(session.access_token);
-        await fetchRequests(session.access_token, filter);
+        fetchRequests(session.access_token);
       } else {
         setLoading(false);
       }
     }
     init();
-  }, [supabase, fetchRequests, filter]);
+  }, [supabase, fetchRequests]);
 
-  const handleResolve = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeRequest) return;
-    if (decision === "approved" && !newDate) {
-      setErrorMsg("يرجى تحديد الموعد الجديد للحصة عند الموافقة.");
-      return;
-    }
-
-    setSubmitting(true);
-    setErrorMsg(null);
+  const handleAction = async (requestId: string, status: "approved" | "rejected") => {
+    if (!token) return;
+    const confirmed = confirm(
+      status === "approved"
+        ? "هل أنت متأكد من قبول الطلب وتحديث موعد الحصة رسمياً؟"
+        : "هل أنت متأكد من رفض طلب إعادة الجدولة؟"
+    );
+    if (!confirmed) return;
 
     try {
-      const res = await fetch(`/api/v1/reschedule-requests/${activeRequest.id}`, {
+      setActionLoadingId(requestId);
+      const res = await fetch(`/api/v1/reschedule-requests/${requestId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          status: decision,
-          supervisor_notes: supervisorNotes || null,
-          new_scheduled_at_utc: decision === "approved" ? new Date(newDate).toISOString() : undefined,
+          status,
+          admin_notes: status === "approved" ? "تمت الموافقة من المشرف الأكاديمي" : "تم رفض الطلب لتعارض الجدول",
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "فشل تسجيل القرار");
+      if (res.ok) {
+        await fetchRequests(token);
+      } else {
+        const err = await res.json();
+        alert(`فشل اتخاذ الإجراء: ${err.error || "خطأ غير متوقع"}`);
       }
-
-      setActiveRequest(null);
-      setNewDate("");
-      setSupervisorNotes("");
-      await fetchRequests(token, filter);
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "حدث خطأ غير متوقع");
+    } catch (err) {
+      console.error("Error updating reschedule request:", err);
     } finally {
-      setSubmitting(false);
+      setActionLoadingId(null);
     }
   };
 
+  const filteredRequests = requests.filter((r) => {
+    if (filter === "all") return true;
+    return r.status === filter;
+  });
+
+  const stats = {
+    pending: requests.filter((r) => r.status === "pending").length,
+    approved: requests.filter((r) => r.status === "approved").length,
+    rejected: requests.filter((r) => r.status === "rejected").length,
+  };
+
   return (
-    <div className="max-w-6xl mx-auto p-6 dir-rtl text-right">
-      <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">طلبات إعادة جدولة الحصص</h1>
-          <p className="text-sm text-gray-500 mt-1">مراجعة واعتماد أو رفض طلبات تغيير المواعيد المقدمة من الطلاب والمعلمين</p>
+    <div className="space-y-8">
+      {/* 1. صف البطاقات الإحصائية العلوية */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">طلبات بانتظار المراجعة</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">تحتاج قراراً فورياً من المشرف</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {stats.pending}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100/80">
+              معلقة
+            </span>
+          </div>
         </div>
 
-        {/* فلاتر الحالة */}
-        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl text-xs font-medium">
-          <button
-            onClick={() => setFilter("pending")}
-            className={`px-3 py-1.5 rounded-lg transition ${filter === "pending" ? "bg-white text-emerald-700 shadow-sm" : "text-gray-600"}`}
-          >
-            المعلقة (Pending)
-          </button>
-          <button
-            onClick={() => setFilter("approved")}
-            className={`px-3 py-1.5 rounded-lg transition ${filter === "approved" ? "bg-white text-emerald-700 shadow-sm" : "text-gray-600"}`}
-          >
-            المقبولة (Approved)
-          </button>
-          <button
-            onClick={() => setFilter("rejected")}
-            className={`px-3 py-1.5 rounded-lg transition ${filter === "rejected" ? "bg-white text-emerald-700 shadow-sm" : "text-gray-600"}`}
-          >
-            المرفوضة (Rejected)
-          </button>
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">الطلبات المقبولة</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">تم تعديل مواعيدها بنجاح</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {stats.approved}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/80">
+              مقبولة
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">الطلبات المعتذر عنها</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">تعذر تعديل الموعد</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {stats.rejected}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100/80">
+              مرفوضة
+            </span>
+          </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="py-20 text-center text-gray-400">جاري تحميل الطلبات...</div>
-      ) : requests.length === 0 ? (
-        <div className="py-20 text-center bg-white border border-dashed rounded-2xl">
-          <p className="text-gray-500">لا توجد طلبات تطابق الفلتر المحدد حالياً.</p>
+      {/* 2. منطقة عرض الطلبات والفلاتر الكبسولية */}
+      <div className="border border-slate-100/90 rounded-[32px] p-6 sm:p-8 bg-white shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">طلبات إعادة جدولة الحصص</h2>
+            <p className="text-xs text-slate-400 mt-0.5">استعراض طلبات المعلمين وأولياء الأمور لتغيير المواعيد واتخاذ القرار</p>
+          </div>
+
+          {/* فلاتر الحالات الكبسولية */}
+          <div className="flex items-center bg-slate-50 p-1 rounded-full border border-slate-100 text-xs font-semibold gap-1 self-stretch sm:self-auto justify-center">
+            <button
+              onClick={() => setFilter("pending")}
+              className={`px-4 py-1.5 rounded-full transition-all ${
+                filter === "pending"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              المعلقة ({stats.pending})
+            </button>
+            <button
+              onClick={() => setFilter("approved")}
+              className={`px-4 py-1.5 rounded-full transition-all ${
+                filter === "approved"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              المقبولة ({stats.approved})
+            </button>
+            <button
+              onClick={() => setFilter("rejected")}
+              className={`px-4 py-1.5 rounded-full transition-all ${
+                filter === "rejected"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              المرفوضة ({stats.rejected})
+            </button>
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-4 py-1.5 rounded-full transition-all ${
+                filter === "all"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              الكل ({requests.length})
+            </button>
+          </div>
         </div>
-      ) : (
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm">
-              <thead className="bg-gray-50 text-gray-600 text-xs border-b">
-                <tr>
-                  <th className="p-4">الطالب</th>
-                  <th className="p-4">المعلم</th>
-                  <th className="p-4">مقدم الطلب</th>
-                  <th className="p-4">الموعد الحالي</th>
-                  <th className="p-4">السبب</th>
-                  <th className="p-4">الحالة</th>
-                  <th className="p-4">الإجراء</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {requests.map((r) => (
-                  <tr key={r.id} className="hover:bg-gray-50 transition">
-                    <td className="p-4 font-semibold text-gray-900">
-                      {r.session?.student?.student_name || "غير محدد"}
-                    </td>
-                    <td className="p-4 text-gray-600">
-                      {r.session?.tutor?.full_name || "غير محدد"}
-                    </td>
-                    <td className="p-4 text-xs text-gray-500">
-                      {r.requester?.full_name || "—"} ({r.requester?.role === "tutor" ? "معلم" : "ولي أمر"})
-                    </td>
-                    <td className="p-4 text-xs text-gray-600">
-                      {r.session?.scheduled_at_utc
-                        ? new Date(r.session.scheduled_at_utc).toLocaleString("ar-EG", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })
-                        : "—"}
-                    </td>
-                    <td className="p-4 text-xs text-gray-700 max-w-xs truncate" title={r.reason}>
-                      {r.reason}
-                    </td>
-                    <td className="p-4">
-                      {r.status === "pending" && (
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-800">معلق</span>
+
+        {loading ? (
+          <div className="py-20 text-center text-xs text-slate-400">جاري تحميل الطلبات...</div>
+        ) : filteredRequests.length === 0 ? (
+          <div className="py-16 text-center text-xs text-slate-400 bg-slate-50/60 rounded-3xl border border-dashed border-slate-200">
+            لا توجد طلبات في هذا القسم حالياً.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredRequests.map((req) => {
+              const currentOldDate = req.session?.scheduled_at_utc
+                ? new Date(req.session.scheduled_at_utc)
+                : null;
+              const proposedDate = new Date(req.proposed_slot_utc);
+
+              const isPending = req.status === "pending";
+              const isActionLoading = actionLoadingId === req.id;
+
+              return (
+                <div
+                  key={req.id}
+                  className="p-5 rounded-[24px] border border-slate-100 hover:border-slate-200 bg-slate-50/30 hover:bg-white transition flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+                >
+                  {/* بيانات أطراف الحصة والسبب */}
+                  <div className="flex items-start gap-4 min-w-[240px]">
+                    <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                      🔄
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-900 text-sm">
+                        {req.session?.students?.student_name || "طالب"}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        المعلم: {req.session?.tutors?.profiles?.full_name || "معلم معتمد"} • مقدم الطلب:{" "}
+                        <span className="font-semibold text-slate-700">
+                          {req.requested_by_role === "tutor" ? "المعلم" : "ولي الأمر"}
+                        </span>
+                      </div>
+                      {req.reason && (
+                        <div className="mt-2 text-xs bg-slate-100/80 text-slate-700 p-2.5 rounded-xl border border-slate-200/60 font-medium">
+                          <span className="text-slate-400 font-normal">السبب: </span>
+                          {req.reason}
+                        </div>
                       )}
-                      {r.status === "approved" && (
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800">مقبول</span>
-                      )}
-                      {r.status === "rejected" && (
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-rose-100 text-rose-800">مرفوض</span>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      {r.status === "pending" ? (
+                    </div>
+                  </div>
+
+                  {/* مقارنة المواعيد: القديم مقابل المقترح */}
+                  <div className="flex items-center gap-4 bg-white p-3.5 rounded-2xl border border-slate-100 shadow-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-semibold">الموعد الحالي:</span>
+                      <span className="text-xs font-bold text-slate-700">
+                        {currentOldDate
+                          ? currentOldDate.toLocaleString("ar-EG", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              timeZone: "UTC",
+                            }) + " UTC"
+                          : "—"}
+                      </span>
+                    </div>
+
+                    <span className="text-slate-300 font-bold">←</span>
+
+                    <div>
+                      <span className="text-[10px] text-blue-500 block font-bold">الموعد المقترح:</span>
+                      <span className="text-xs font-bold text-blue-700">
+                        {proposedDate.toLocaleString("ar-EG", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "UTC",
+                        }) + " UTC"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* حالة الطلب أو أزرار اتخاذ القرار */}
+                  <div className="w-full lg:w-auto flex items-center justify-end gap-2.5">
+                    {isPending ? (
+                      <>
                         <button
-                          onClick={() => {
-                            setActiveRequest(r);
-                            setDecision("approved");
-                            setErrorMsg(null);
-                          }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
+                          type="button"
+                          disabled={isActionLoading}
+                          onClick={() => handleAction(req.id, "rejected")}
+                          className="px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl transition disabled:opacity-50"
                         >
-                          بت في الطلب
+                          رفض ✕
                         </button>
-                      ) : (
-                        <span className="text-xs text-gray-400">مكتمل</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* نافذة اتخاذ القرار للمشرف */}
-      {activeRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 dir-rtl text-right">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="text-lg font-bold text-gray-900">مراجعة طلب إعادة الجدولة</h3>
-              <button
-                onClick={() => setActiveRequest(null)}
-                className="text-gray-400 hover:text-gray-600 text-xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="bg-gray-50 p-3 rounded-xl text-xs space-y-1.5 text-gray-700">
-              <p><strong>الطالب:</strong> {activeRequest.session?.student?.student_name}</p>
-              <p><strong>سبب الطلب:</strong> {activeRequest.reason}</p>
-              <p>
-                <strong>الموعد الأصلي:</strong>{" "}
-                {activeRequest.session?.scheduled_at_utc
-                  ? new Date(activeRequest.session.scheduled_at_utc).toLocaleString("ar-EG")
-                  : "—"}
-              </p>
-            </div>
-
-            {errorMsg && (
-              <div className="p-3 bg-rose-50 text-rose-700 text-xs rounded-lg">{errorMsg}</div>
-            )}
-
-            <form onSubmit={handleResolve} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">القرار *</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="decision"
-                      value="approved"
-                      checked={decision === "approved"}
-                      onChange={() => setDecision("approved")}
-                      className="text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span>قبول الطلب وتحديد الموعد</span>
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="decision"
-                      value="rejected"
-                      checked={decision === "rejected"}
-                      onChange={() => setDecision("rejected")}
-                      className="text-rose-600 focus:ring-rose-500"
-                    />
-                    <span>رفض الطلب</span>
-                  </label>
+                        <button
+                          type="button"
+                          disabled={isActionLoading}
+                          onClick={() => handleAction(req.id, "approved")}
+                          className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition shadow-sm disabled:opacity-50"
+                        >
+                          {isActionLoading ? "جاري الحفظ..." : "موافقة واعتماد ✓"}
+                        </button>
+                      </>
+                    ) : (
+                      <span
+                        className={`text-xs font-bold px-3.5 py-1.5 rounded-full border ${
+                          req.status === "approved"
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            : "bg-rose-50 text-rose-600 border-rose-100"
+                        }`}
+                      >
+                        {req.status === "approved" ? "تمت الموافقة" : "تم الرفض"}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              {decision === "approved" && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">الموعد الجديد المعتمد *</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full text-sm border border-gray-200 rounded-lg p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">ملاحظات المشرف (تصل لصاحب الطلب)</label>
-                <textarea
-                  rows={2}
-                  value={supervisorNotes}
-                  onChange={(e) => setSupervisorNotes(e.target.value)}
-                  placeholder="سبب الرفض أو تأكيد التوقيت الجديد..."
-                  className="w-full text-sm border border-gray-200 rounded-lg p-2.5 focus:ring-1 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t">
-                <button
-                  type="button"
-                  onClick={() => setActiveRequest(null)}
-                  className="px-4 py-2 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className={`px-4 py-2 text-xs font-medium text-white rounded-lg transition disabled:opacity-50 ${
-                    decision === "approved"
-                      ? "bg-emerald-600 hover:bg-emerald-700"
-                      : "bg-rose-600 hover:bg-rose-700"
-                  }`}
-                >
-                  {submitting ? "جاري الحفظ..." : "تأكيد القرار"}
-                </button>
-              </div>
-            </form>
+              );
+            })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

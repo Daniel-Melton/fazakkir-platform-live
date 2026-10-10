@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { createBrowserClient } from "@supabase/ssr";
-import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { createClient } from "@supabase/supabase-js";
 
-const supabase = createBrowserClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
@@ -49,9 +48,6 @@ export default function SupervisorEnrollmentsPage() {
   const [token, setToken] = useState<string>("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-
-  // تبويبات الـ Navigation العلوية
-  const [activeTab, setActiveTab] = useState<"dashboard" | "enrollments" | "calendar" | "tutors">("dashboard");
 
   // حالة النوافذ المنبثقة
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
@@ -116,13 +112,6 @@ export default function SupervisorEnrollmentsPage() {
     }
     init();
   }, [loadData]);
-
-  // إحصائيات سريعة للبطاقات العلوية
-  const stats = {
-    scheduledCount: enrollments.filter((e) => e.class_sessions?.some((s) => s.status === "scheduled")).length,
-    pendingTrials: enrollments.filter((e) => e.status === "trial_pending").length,
-    totalStudents: enrollments.length,
-  };
 
   const fetchTutorSlots = async (tutorId: string, dateStr: string) => {
     if (!tutorId) {
@@ -315,15 +304,22 @@ export default function SupervisorEnrollmentsPage() {
     }
   };
 
-  // قائمة الحصص القادمة للمنطقة الجانبية
-  const upcomingSessions = enrollments
+  // مقاييس إحصائية مستخرجة مباشرة من البيانات القائمة
+  const stats = {
+    scheduledSessions: enrollments.filter((e) => e.class_sessions?.some((s) => s.status === "scheduled")).length,
+    pendingTrials: enrollments.filter((e) => e.status === "trial_pending").length,
+    totalEnrolled: enrollments.length,
+  };
+
+  // قائمة الحصص القادمة للعمود الجانبي
+  const upcomingBookings = enrollments
     .flatMap((e) =>
       (e.class_sessions || [])
         .filter((s) => s.status === "scheduled")
         .map((s) => ({
           ...s,
           studentName: e.students?.student_name || "طالب",
-          tutorName: tutors.find((t) => t.id === e.tutor_id)?.profiles?.full_name || "المعلم",
+          tutorName: tutors.find((t) => t.id === e.tutor_id)?.profiles?.full_name || "معلم معتمد",
           enrollment: e,
         }))
     )
@@ -331,356 +327,277 @@ export default function SupervisorEnrollmentsPage() {
     .slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#F4F5F9] p-4 md:p-8 dir-rtl text-right font-sans text-slate-800">
-      {/* الإطار الأبيض العائم المستدير */}
-      <div className="max-w-[1400px] mx-auto bg-white rounded-[32px] shadow-sm border border-slate-200/60 p-6 md:p-10">
+    <div className="space-y-8">
+      {/* 1. صف البطاقات الإحصائية (Stat Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">الحصص المجدولة</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">الحصص القائمة والمعتمدة</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {stats.scheduledSessions}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/80">
+              نشطة
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">حصص تجربة معلقة</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">بانتظار تخصيص موعد</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {stats.pendingTrials}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100/80">
+              معلقة
+            </span>
+          </div>
+        </div>
+
+        <div className="p-6 rounded-[28px] bg-slate-50/70 border border-slate-100 flex flex-col justify-between hover:border-slate-200 transition">
+          <div>
+            <span className="text-xs font-bold text-slate-800">إجمالي الاشتراكات</span>
+            <p className="text-[11px] text-slate-400 mt-0.5">الطلاب المقيدون بالنظام</p>
+          </div>
+          <div className="flex items-baseline justify-between mt-6">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">
+              {stats.totalEnrolled}
+            </span>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100/80">
+              طالب
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. التقسيم الشبكي: القائمة الرئيسية على اليسار والتقويم والحصص على اليمين */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* 1. الشريط العلوي الكبسولي (Header & Capsule Nav) */}
-        <header className="flex flex-col md:flex-row items-center justify-between gap-4 pb-8 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              ف
+        {/* العمود الرئيسي: تسكين الطلاب وتعيين المعلمين */}
+        <section className="lg:col-span-8 border border-slate-100/90 rounded-[32px] p-6 sm:p-7 bg-white shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900">تسكين وجدولة الطلاب</h2>
+              <p className="text-xs text-slate-400 mt-0.5">إدارة إسناد المعلمين ومواعيد الحصص التجريبية</p>
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-slate-900">
-              أكاديمية فذكّر
+            <span className="text-xs font-bold text-slate-400 bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-100">
+              {enrollments.length} طالب
             </span>
           </div>
 
-          {/* كبسولات التنقل */}
-          <nav className="flex items-center bg-slate-50 p-1.5 rounded-full border border-slate-100 text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`px-5 py-2 rounded-full transition-all ${
-                activeTab === "dashboard"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              الرئيسية
-            </button>
-            <button
-              onClick={() => setActiveTab("enrollments")}
-              className={`px-5 py-2 rounded-full transition-all ${
-                activeTab === "enrollments"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              الاشتراكات
-            </button>
-            <button
-              onClick={() => setActiveTab("calendar")}
-              className={`px-5 py-2 rounded-full transition-all ${
-                activeTab === "calendar"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              التقويم
-            </button>
-            <button
-              onClick={() => setActiveTab("tutors")}
-              className={`px-5 py-2 rounded-full transition-all ${
-                activeTab === "tutors"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              المعلمون
-            </button>
-          </nav>
-
-          {/* أدوات التحكم العلوية: بحث، جرس إشعارات، بروفايل */}
-          <div className="flex items-center gap-3">
-            <button className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition">
-              🔍
-            </button>
-            
-            {/* جرس الإشعارات مع صوت الـ Pop والتحديث اللحظي */}
-            <div className="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center hover:bg-slate-50 transition">
-              <NotificationBell authToken={token} />
+          {initialLoading ? (
+            <div className="py-20 text-center text-xs text-slate-400">جاري تحميل البيانات...</div>
+          ) : enrollments.length === 0 ? (
+            <div className="py-20 text-center text-xs text-slate-400 bg-slate-50/60 rounded-3xl border border-dashed border-slate-200">
+              لا توجد طلبات اشتراك حالياً.
             </div>
+          ) : (
+            <div className="space-y-3">
+              {enrollments.map((item) => {
+                const activeSession = item.class_sessions?.find((s) => s.status === "scheduled");
+                const isLocked = Boolean(activeSession);
 
-            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700">
-              مشرف
-            </div>
-          </div>
-        </header>
-
-        {/* 2. قسم المحتوى الداخلي وشبكة التوزيع */}
-        <main className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* العمود الرئيسي (8 أعمدة): الإحصائيات + قائمة الطلاب وتسكين الحصص */}
-          <section className="lg:col-span-8 space-y-8">
-            
-            {/* بطاقات الإحصائيات الـ 3 المستوحاة من التصميم */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              
-              <div className="p-6 rounded-3xl bg-slate-50/60 border border-slate-100 flex flex-col justify-between">
-                <div>
-                  <span className="text-xs font-semibold text-slate-400">الحصص المجدولة</span>
-                  <p className="text-xs text-slate-400 mt-0.5">الحصص القائمة حالياً</p>
-                </div>
-                <div className="flex items-baseline justify-between mt-6">
-                  <span className="text-3xl font-black text-slate-900">{stats.scheduledCount}</span>
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
-                    نشطة
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-slate-50/60 border border-slate-100 flex flex-col justify-between">
-                <div>
-                  <span className="text-xs font-semibold text-slate-400">تجارب معلقة</span>
-                  <p className="text-xs text-slate-400 mt-0.5">بانتظار تخصيص موعد</p>
-                </div>
-                <div className="flex items-baseline justify-between mt-6">
-                  <span className="text-3xl font-black text-slate-900">{stats.pendingTrials}</span>
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
-                    معلقة
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-slate-50/60 border border-slate-100 flex flex-col justify-between">
-                <div>
-                  <span className="text-xs font-semibold text-slate-400">إجمالي الاشتراكات</span>
-                  <p className="text-xs text-slate-400 mt-0.5">الطلاب المقيدون</p>
-                </div>
-                <div className="flex items-baseline justify-between mt-6">
-                  <span className="text-3xl font-black text-slate-900">{stats.totalStudents}</span>
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                    طالب
-                  </span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* بطاقة تسكين الطلاب وإدارة الحصص */}
-            <div className="border border-slate-100 rounded-3xl p-6 bg-white shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">تسكين وجدولة الطلاب</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">تعيين المعلمين وإدارة مواعيد الحصص التجريبية</p>
-                </div>
-                <span className="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-                  {enrollments.length} اشتراك
-                </span>
-              </div>
-
-              {initialLoading ? (
-                <div className="py-16 text-center text-xs text-slate-400">جاري تحميل المنظومة...</div>
-              ) : enrollments.length === 0 ? (
-                <div className="py-16 text-center text-xs text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                  لا توجد طلبات اشتراك حالياً.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {enrollments.map((item) => {
-                    const activeSession = item.class_sessions?.find((s) => s.status === "scheduled");
-                    const isLocked = Boolean(activeSession);
-
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex flex-col md:flex-row items-center justify-between p-4 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/40 transition gap-4"
-                      >
-                        {/* بيانات الطالب */}
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                          <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
-                            {item.students?.student_name?.charAt(0) || "ط"}
-                          </div>
-                          <div>
-                            <div className="font-bold text-slate-900 text-sm">
-                              {item.students?.student_name || "طالب بدون اسم"}
-                            </div>
-                            <div className="text-[11px] text-slate-400 font-medium">
-                              المستوى: {item.students?.level || "مبتدئ"} • ولي الأمر: {item.students?.parent?.full_name || "—"}
-                            </div>
-                          </div>
+                return (
+                  <div
+                    key={item.id}
+                    className="flex flex-col md:flex-row items-center justify-between p-4 rounded-2xl border border-slate-100/90 hover:border-slate-200 hover:bg-slate-50/40 transition gap-4"
+                  >
+                    {/* بيانات الطالب */}
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-sm shrink-0">
+                        {item.students?.student_name?.charAt(0) || "ط"}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                          {item.students?.student_name || "طالب بدون اسم"}
                         </div>
-
-                        {/* تخصيص المعلم: مغلق 🔒 إذا كانت الحصة مجدولة */}
-                        <div className="w-full md:w-auto">
-                          {isLocked ? (
-                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100/70 border border-slate-200 px-3.5 py-2 rounded-xl">
-                              <span>🔒</span>
-                              <span className="truncate max-w-[140px]">
-                                {tutors.find((t) => t.id === item.tutor_id)?.profiles?.full_name || "المعلم المخصص"}
-                              </span>
-                            </div>
-                          ) : (
-                            <select
-                              value={item.tutor_id || ""}
-                              onChange={(e) => handleAssignTutor(item.id, e.target.value)}
-                              className={`text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-slate-900 transition-opacity ${
-                                updatingId === item.id ? "opacity-50" : "opacity-100"
-                              }`}
-                            >
-                              <option value="">-- تخصيص معلم --</option>
-                              {tutors.map((t) => (
-                                <option key={t.id} value={t.id}>
-                                  {t.profiles?.full_name || t.id.slice(0, 8)}
-                                </option>
-                              ))}
-                            </select>
-                          )}
+                        <div className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                          المستوى: {item.students?.level || "مبتدئ"} • ولي الأمر: {item.students?.parent?.full_name || "—"}
                         </div>
+                      </div>
+                    </div>
 
-                        {/* زر الجدولة أو كبسولة الموعد القائم */}
-                        <div className="w-full md:w-auto text-left">
-                          {activeSession ? (
-                            (() => {
-                              const d = new Date(activeSession.scheduled_at_utc);
-                              const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
-                              const dateStr = `${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
+                    {/* تعيين المعلم: مغلق 🔒 إذا كانت الحصة مجدولة */}
+                    <div className="w-full md:w-auto">
+                      {isLocked ? (
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-100/80 border border-slate-200/80 px-3.5 py-2 rounded-xl">
+                          <span>🔒</span>
+                          <span className="truncate max-w-[140px]">
+                            {tutors.find((t) => t.id === item.tutor_id)?.profiles?.full_name || "المعلم المخصص"}
+                          </span>
+                        </div>
+                      ) : (
+                        <select
+                          value={item.tutor_id || ""}
+                          onChange={(e) => handleAssignTutor(item.id, e.target.value)}
+                          className={`text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 outline-none focus:ring-2 focus:ring-slate-900 transition-opacity w-full md:w-auto ${
+                            updatingId === item.id ? "opacity-50" : "opacity-100"
+                          }`}
+                        >
+                          <option value="">-- تخصيص معلم --</option>
+                          {tutors.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.profiles?.full_name || t.id.slice(0, 8)}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
 
-                              return (
-                                <button
-                                  type="button"
-                                  onClick={() => openManageModal(item, activeSession)}
-                                  className="inline-flex items-center gap-2 text-xs px-3.5 py-2 rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm"
-                                >
-                                  <span>📅</span>
-                                  <span>{dateStr} • {timeStr} UTC</span>
-                                </button>
-                              );
-                            })()
-                          ) : (
+                    {/* إجراء الجدولة أو كبسولة الموعد القائم */}
+                    <div className="w-full md:w-auto text-left">
+                      {activeSession ? (
+                        (() => {
+                          const d = new Date(activeSession.scheduled_at_utc);
+                          const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+                          const dateStr = `${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
+
+                          return (
                             <button
                               type="button"
-                              onClick={() => openScheduleModal(item)}
-                              disabled={!item.tutor_id}
-                              className={`text-xs px-4 py-2 rounded-xl font-bold transition ${
-                                item.tutor_id
-                                  ? "bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200"
-                                  : "bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed"
-                              }`}
+                              onClick={() => openManageModal(item, activeSession)}
+                              className="inline-flex items-center gap-2 text-xs px-3.5 py-2 rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm w-full md:w-auto justify-center"
                             >
-                              جدولة تجربة
+                              <span>📅</span>
+                              <span>{dateStr} • {timeStr} UTC</span>
                             </button>
-                          )}
+                          );
+                        })()
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openScheduleModal(item)}
+                          disabled={!item.tutor_id}
+                          className={`text-xs px-4 py-2 rounded-xl font-bold transition w-full md:w-auto justify-center ${
+                            item.tutor_id
+                              ? "bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200/80"
+                              : "bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed"
+                          }`}
+                        >
+                          جدولة تجربة
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* العمود الجانبي: التقويم المصغر وويدجت الحصص القادمة */}
+        <aside className="lg:col-span-4 space-y-6">
+          
+          {/* التقويم المصغر (سبتمبر 2026) */}
+          <div className="border border-slate-100/90 rounded-[32px] p-6 bg-slate-50/50">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-slate-400 cursor-pointer">‹</span>
+              <span className="text-xs font-extrabold text-slate-800">سبتمبر 2026</span>
+              <span className="text-xs font-bold text-slate-400 cursor-pointer">›</span>
+            </div>
+
+            <div className="grid grid-cols-7 text-center text-[11px] font-semibold text-slate-400 mb-2">
+              <span>س</span><span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-700">
+              <span className="p-2 text-slate-300">29</span>
+              <span className="p-2 text-slate-300">30</span>
+              <span className="p-2">1</span>
+              <span className="p-2">2</span>
+              <span className="p-2">3</span>
+              <span className="p-2">4</span>
+              <span className="p-2">5</span>
+              <span className="p-2">6</span>
+              <span className="p-2">7</span>
+              <span className="p-2">8</span>
+              <span className="p-2">9</span>
+              <span className="p-2">10</span>
+              <span className="p-2">11</span>
+              <span className="p-2">12</span>
+              <span className="p-2">13</span>
+              <span className="p-2">14</span>
+              <span className="p-2">15</span>
+              <span className="p-2">16</span>
+              <span className="p-2">17</span>
+              <span className="p-2">18</span>
+              <span className="p-2">19</span>
+              <span className="p-2">20</span>
+              <span className="p-2">21</span>
+              <span className="p-2">22</span>
+              <span className="p-2">23</span>
+              <span className="p-2 rounded-full bg-blue-500 text-white font-bold shadow-sm">24</span>
+              <span className="p-2">25</span>
+              <span className="p-2">26</span>
+              <span className="p-2">27</span>
+              <span className="p-2">28</span>
+              <span className="p-2">29</span>
+              <span className="p-2">30</span>
+            </div>
+          </div>
+
+          {/* ويدجت الحصص القادمة الفوري المماثل لـ Upcoming Bookings */}
+          <div className="border border-slate-100/90 rounded-[32px] p-6 bg-white shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-bold text-slate-900">الحصص القادمة المجدولة</h3>
+              <span className="text-xs font-bold text-slate-400">›</span>
+            </div>
+
+            {upcomingBookings.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">لا توجد حصص قادمة مجدولة</div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingBookings.map((session, idx) => {
+                  const sessionDate = new Date(session.scheduled_at_utc);
+                  const time = sessionDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+                  const dateFormatted = sessionDate.toLocaleDateString("ar-EG", { month: "short", day: "numeric", timeZone: "UTC" });
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => openManageModal(session.enrollment, session)}
+                      className="flex items-center justify-between p-3 rounded-2xl border border-slate-100/90 hover:border-slate-200 hover:bg-slate-50/50 cursor-pointer transition"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                          📖
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-900 truncate">{session.studentName}</div>
+                          <div className="text-[10px] text-slate-400 truncate">{session.tutorName}</div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
 
-          </section>
-
-          {/* العمود الجانبي (4 أعمدة): التقويم المصغر + الحصص القادمة */}
-          <aside className="lg:col-span-4 space-y-6">
-            
-            {/* 1. التقويم المصغر (July 2026 / Calendar Widget) */}
-            <div className="border border-slate-100 rounded-3xl p-6 bg-slate-50/40">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-slate-400">‹</span>
-                <span className="text-sm font-extrabold text-slate-800">سبتمبر 2026</span>
-                <span className="text-xs font-bold text-slate-400">›</span>
-              </div>
-
-              {/* أسماء الأيام */}
-              <div className="grid grid-cols-7 text-center text-[11px] font-semibold text-slate-400 mb-2">
-                <span>س</span><span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span>
-              </div>
-
-              {/* أيام الشهر مع إبراز اليوم المحدد بكبسولة ناعمة */}
-              <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-700">
-                <span className="p-2 text-slate-300">29</span>
-                <span className="p-2 text-slate-300">30</span>
-                <span className="p-2">1</span>
-                <span className="p-2">2</span>
-                <span className="p-2">3</span>
-                <span className="p-2">4</span>
-                <span className="p-2">5</span>
-                <span className="p-2">6</span>
-                <span className="p-2">7</span>
-                <span className="p-2">8</span>
-                <span className="p-2">9</span>
-                <span className="p-2">10</span>
-                <span className="p-2">11</span>
-                <span className="p-2">12</span>
-                <span className="p-2">13</span>
-                <span className="p-2">14</span>
-                <span className="p-2">15</span>
-                <span className="p-2">16</span>
-                <span className="p-2">17</span>
-                <span className="p-2">18</span>
-                <span className="p-2">19</span>
-                <span className="p-2">20</span>
-                <span className="p-2">21</span>
-                <span className="p-2">22</span>
-                <span className="p-2">23</span>
-                <span className="p-2 rounded-full bg-blue-500 text-white font-bold shadow-sm">24</span>
-                <span className="p-2">25</span>
-                <span className="p-2">26</span>
-                <span className="p-2">27</span>
-                <span className="p-2">28</span>
-                <span className="p-2">29</span>
-                <span className="p-2">30</span>
-              </div>
-            </div>
-
-            {/* 2. ويدجت الحصص القادمة المماثلة لـ Upcoming Bookings */}
-            <div className="border border-slate-100 rounded-3xl p-6 bg-white shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-slate-900">الحصص القادمة</h3>
-                <span className="text-xs font-bold text-slate-400">›</span>
-              </div>
-
-              {upcomingSessions.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">لا توجد حصص قادمة مجدولة</div>
-              ) : (
-                <div className="space-y-4">
-                  {upcomingSessions.map((session, idx) => {
-                    const sessionDate = new Date(session.scheduled_at_utc);
-                    const time = sessionDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
-                    const dateFormatted = sessionDate.toLocaleDateString("ar-EG", { month: "short", day: "numeric", timeZone: "UTC" });
-
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => openManageModal(session.enrollment, session)}
-                        className="flex items-center justify-between p-3 rounded-2xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 cursor-pointer transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
-                            📖
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900">{session.studentName}</div>
-                            <div className="text-[10px] text-slate-400">{session.tutorName}</div>
-                          </div>
-                        </div>
-
-                        <div className="text-left">
-                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
-                            {time} UTC
-                          </span>
-                          <div className="text-[10px] text-slate-400 mt-0.5">{dateFormatted}</div>
-                        </div>
+                      <div className="text-left shrink-0">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/80">
+                          {time} UTC
+                        </span>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{dateFormatted}</div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-          </aside>
+        </aside>
 
-        </main>
       </div>
 
       {/* مودال 1: إدارة الحصة القائمة (تعديل أو إلغاء) */}
       {manageModalOpen && selectedEnrollment && activeSessionToManage && (
         <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] max-w-md w-full p-6 shadow-xl border border-slate-100">
-            <h3 className="text-base font-extrabold text-slate-900 mb-2">تفاصيل وإدارة الحصة</h3>
+            <h3 className="text-sm font-extrabold text-slate-900 mb-2">تفاصيل وإدارة الحصة</h3>
             
-            <div className="bg-slate-50 rounded-2xl p-4 mb-4 text-xs space-y-2 border border-slate-100">
+            <div className="bg-slate-50/80 rounded-2xl p-4 mb-4 text-xs space-y-2 border border-slate-100">
               <div>
                 <span className="text-slate-400">الطالب:</span>{" "}
                 <span className="font-bold text-slate-800">{selectedEnrollment.students?.student_name}</span>
@@ -765,7 +682,7 @@ export default function SupervisorEnrollmentsPage() {
       {scheduleModalOpen && selectedEnrollment && (
         <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[28px] max-w-md w-full p-6 shadow-xl border border-slate-100">
-            <h3 className="text-base font-extrabold text-slate-900 mb-1">
+            <h3 className="text-sm font-extrabold text-slate-900 mb-1">
               {isRescheduling ? "تعديل موعد الحصة التجريبية" : "جدولة حصة تجريبية"}
             </h3>
             <p className="text-xs text-slate-400 mb-4">
