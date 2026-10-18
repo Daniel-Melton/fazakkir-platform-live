@@ -1,10 +1,8 @@
 import React from "react";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Online Quran Hifz Program | Memorize with Strong Retention",
-  description: "Customized memorization and rigorous revision plans led by Huffaz with continuous Sanad.",
-};
+export const metadata = buildMetadata("hifz");
 
 export default function QuranHifzLanding() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
@@ -33,7 +31,7 @@ export default function QuranHifzLanding() {
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
               Memorize the Quran with a System Designed for{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300">
-                Zero Forgetfulness
+                Strong Retention
               </span>
             </h1>
 

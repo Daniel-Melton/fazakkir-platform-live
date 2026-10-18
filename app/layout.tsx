@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Amiri } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { SITE_URL } from "@/lib/seo";
+import Analytics from "@/components/Analytics";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -17,30 +19,19 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fazakkir.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Fazakkir Academy | 1-on-1 Online Quran & Arabic for Kids",
-    template: "%s | Fazakkir Academy",
+    template: "%s | Fazakkir",
   },
   description:
     "Master Quran recitation with certified Al-Azhar scholars. Tailored 1-on-1 online classes in Tajweed, Hifz, and Arabic for Muslim children in the USA, UK, and Canada.",
-  keywords: [
-    "Online Quran classes",
-    "Quran tutor for kids",
-    "1 on 1 Tajweed classes",
-    "Learn Quran online UK",
-    "Quran teacher USA",
-    "Learn Arabic for children",
-    "Al-Azhar Quran academy",
-    "Noorani Qaida online",
-  ],
   authors: [{ name: "Fazakkir Academy Academic Board" }],
   creator: "Fazakkir Academy",
   publisher: "Fazakkir Academy",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://fazakkir.com",
     siteName: "Fazakkir Academy",
     title: "Fazakkir Academy | 1-on-1 Online Quran & Arabic Classes for Kids",
     description:
@@ -83,8 +74,8 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
     name: "Fazakkir Academy",
-    url: "https://fazakkir.com",
-    logo: "https://fazakkir.com/logo.png",
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
     description:
       "Online educational academy teaching the Holy Quran, Tajweed, and Arabic language to children and families living in Western countries.",
     sameAs: [
@@ -125,6 +116,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-slate-200/70 text-slate-900 selection:bg-emerald-100 selection:text-emerald-900 min-h-screen">
+        <Analytics />
         <div className="max-w-[1360px] mx-auto bg-slate-50 shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] min-h-screen border-x border-slate-200/80">
           {children}
         </div>

@@ -1,10 +1,8 @@
 import React from "react";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Quran Ijazah Program with Sanad | Connected Chain to Prophet ﷺ",
-  description: "Attain your Sanad-connected Ijazah in Hafs or other Qira'at through rigorous oral transmission.",
-};
+export const metadata = buildMetadata("ijazah");
 
 export default function QuranIjazahLanding() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
@@ -33,7 +31,7 @@ export default function QuranIjazahLanding() {
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
               Earn an Authentic Quran Ijazah with a{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
-                Direct Sanad to Prophet Muhammad ﷺ
+                Documented Sanad
               </span>
             </h1>
 
@@ -58,7 +56,7 @@ export default function QuranIjazahLanding() {
                 </div>
                 <h4 className="font-bold text-sm text-white">Multiple Qira'at</h4>
                 <p className="text-xs text-slate-300 mt-1 leading-normal">
-                  Accredited tracks available in Hafs, Warsh, Qalun, and the 10 Qira'at.
+                  Tracks available in Hafs, Warsh, Qalun, and the 10 Qira'at.
                 </p>
               </div>
             </div>

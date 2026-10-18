@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 
 const COUNTRY_OPTIONS = [
   { flag: "🇺🇸", name: "USA", code: "+1" },
@@ -20,7 +19,10 @@ const COUNTRY_OPTIONS = [
 ];
 
 function LeadFormContent() {
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams>(() => new URLSearchParams());
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState(false);
@@ -92,6 +94,12 @@ function LeadFormContent() {
       // تفريغ الحقول وإظهار رسالة النجاح
       formRef.current?.reset();
       setSuccessMsg(true);
+      // Anonymous conversion event for GTM (no personal data).
+      (window as unknown as { dataLayer?: unknown[] }).dataLayer?.push({
+        event: "generate_lead",
+        course: courseChoice,
+        plan: isFromCalculator ? planSummary : "direct_form",
+      });
 
       // ملاحظة: تم حذف window.open الخاص بالواتساب بالكامل هنا
     } catch (err: any) {
@@ -299,9 +307,5 @@ function LeadFormContent() {
 }
 
 export default function LeadForm() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading form...</div>}>
-      <LeadFormContent />
-    </Suspense>
-  );
+  return <LeadFormContent />;
 }

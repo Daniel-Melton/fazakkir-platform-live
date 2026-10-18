@@ -1,10 +1,8 @@
 import React from "react";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Arabic for Non-Arabs | Speak Modern Standard Arabic & Quranic Vocabulary",
-  description: "Interactive online 1-on-1 Arabic classes with native tutors. Speak from day one.",
-};
+export const metadata = buildMetadata("arabic");
 
 export default function ArabicNonArabsLanding() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
@@ -33,7 +31,7 @@ export default function ArabicNonArabsLanding() {
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
               Understand What You Recite in Salah and{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-300">
-                Speak Arabic with Native Confidence
+                Speak Arabic with Confidence
               </span>
             </h1>
 
@@ -56,7 +54,7 @@ export default function ArabicNonArabsLanding() {
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-lg mb-2">
                   <i className="fa-solid fa-book-quran" />
                 </div>
-                <h4 className="font-bold text-sm text-white">80% Quranic Vocabulary</h4>
+                <h4 className="font-bold text-sm text-white">Core Quranic Vocabulary</h4>
                 <p className="text-xs text-slate-300 mt-1 leading-normal">
                   Focus on high-frequency words so you connect deeply with daily prayers.
                 </p>

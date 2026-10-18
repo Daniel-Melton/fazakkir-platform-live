@@ -1,10 +1,8 @@
 import React from "react";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Islamic Studies for Kids & Youth | Faith, Manners & Duas",
-  description: "Nurture proud Muslim children with practical Fiqh of Salah, inspiring Prophetic stories, and noble Adab.",
-};
+export const metadata = buildMetadata("islamicStudies");
 
 export default function IslamicStudiesLanding() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";

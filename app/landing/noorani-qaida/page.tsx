@@ -1,10 +1,8 @@
 import React from "react";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Noorani Qaida Course | Learn to Read Quran from Scratch",
-  description: "Master Arabic letters, vowels, and Quran reading rules with certified tutors in fun 1-on-1 sessions.",
-};
+export const metadata = buildMetadata("qaida");
 
 export default function NooraniQaidaLanding() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
@@ -32,9 +30,9 @@ export default function NooraniQaidaLanding() {
             </span>
 
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-              From Zero Letters to Reading the Quran in{" "}
+              From Zero Letters to Reading the Quran,{" "}
               <span className="text-amber-400 underline decoration-emerald-500 underline-offset-8">
-                30 Days
+                Step by Step
               </span>
             </h1>
 

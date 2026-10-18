@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { buildMetadata } from "@/lib/seo";
+export const metadata = buildMetadata("courses");
 
 export const revalidate = 60;
 
