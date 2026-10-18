@@ -3,12 +3,25 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import LeadForm from "@/components/LeadForm";
 import { supabase } from "@/lib/supabaseClient";
+import type { Metadata } from "next";
+import { buildDynamicMetadata, excerptFrom } from "@/lib/seo";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { data: course } = await supabase.from("courses").select("title, subtitle, summary").eq("slug", slug).single();
+  if (!course) return { title: "Course not found", robots: { index: false, follow: false } };
+  return buildDynamicMetadata({
+    path: `/courses/${slug}`,
+    title: course.title,
+    description: excerptFrom(course.summary || course.subtitle) || "1-on-1 online course with Al-Azhar graduate tutors. Try 2 free classes, no credit card needed.",
+  });
+}
 
 export default async function CourseDetailPage({ params }: Props) {
   const { slug } = await params;
@@ -60,7 +73,7 @@ export default async function CourseDetailPage({ params }: Props) {
               </div>
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-certificate text-emerald-400"></i>
-                <span>Official Azhari Certificate</span>
+                <span>Certificate of Completion</span>
               </div>
             </div>
           </div>
@@ -117,7 +130,7 @@ export default async function CourseDetailPage({ params }: Props) {
             <div className="bg-emerald-50/70 p-6 rounded-2xl border border-emerald-200">
               <h3 className="text-sm sm:text-base font-bold text-emerald-950 mb-3 flex items-center gap-2">
                 <i className="fa-solid fa-book-bookmark text-emerald-600"></i>
-                <span>Accredited Teaching Materials</span>
+                <span>Structured Teaching Materials</span>
               </h3>
               <ul className="space-y-2">
                 {course.books_materials?.map((bk: string, idx: number) => (

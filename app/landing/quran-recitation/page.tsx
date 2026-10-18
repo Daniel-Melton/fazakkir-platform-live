@@ -1,10 +1,8 @@
 import React from "react";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Quran Recitation & Tajweed Mastery | Fazakkir",
-  description: "Perfect your pronunciation and beautify your recitation with certified Al-Azhar Tajweed scholars.",
-};
+export const metadata = buildMetadata("recitation");
 
 export default function QuranRecitationLanding() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";

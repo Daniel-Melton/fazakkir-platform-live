@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabaseClient";
+import type { Metadata } from "next";
+import { buildDynamicMetadata, excerptFrom } from "@/lib/seo";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 
@@ -10,6 +12,19 @@ interface Props {
 }
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { data: post } = await supabase.from("articles").select("title, content, cover_image").eq("slug", slug).single();
+  if (!post) return { title: "Article not found", robots: { index: false, follow: false } };
+  return buildDynamicMetadata({
+    path: `/blog/${slug}`,
+    title: post.title,
+    description: excerptFrom(post.content),
+    image: post.cover_image && /^https?:\/\//.test(post.cover_image) ? post.cover_image : undefined,
+    type: "article",
+  });
+}
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?auto=format&fit=crop&w=1600&q=80";
@@ -148,7 +163,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </li>
                 <li className="flex items-center gap-2">
                   <i className="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i>
-                  <span>Male & Female Native Tutors</span>
+                  <span>Male & Female Tutors</span>
                 </li>
               </ul>
               <Link

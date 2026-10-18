@@ -1,12 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import LeadForm from "@/components/LeadForm";
+import { buildMetadata } from "@/lib/seo";
+import { OFFER } from "@/lib/offer";
 
-export const metadata = {
-  title: "Safe & Nurturing Islamic Education for Your Children | Fazakkir",
-  description:
-    "Empower your children with authentic Quran memorization, Arabic fluency, and noble Islamic values in a safe, caring, 1-on-1 online environment.",
-};
+export const metadata = buildMetadata("parents");
 
 export default function ParentsLandingPage() {
   const waNumber = process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201126425304";
@@ -142,7 +140,7 @@ export default function ParentsLandingPage() {
                   Sibling & Family Discounts
                 </span>
                 <span className="px-2.5 py-1 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded-full text-xs font-bold">
-                  Save Up to 20%
+                  Save {OFFER.siblingDiscountPercent}%
                 </span>
               </div>
 
@@ -181,7 +179,7 @@ export default function ParentsLandingPage() {
           <div className="flex flex-wrap justify-center gap-6 text-xs text-slate-300 font-semibold">
             <span className="flex items-center gap-1.5"><i className="fa-solid fa-check text-emerald-400"></i> No Credit Card Required</span>
             <span className="flex items-center gap-1.5"><i className="fa-solid fa-check text-emerald-400"></i> Change Tutor Anytime</span>
-            <span className="flex items-center gap-1.5"><i className="fa-solid fa-check text-emerald-400"></i> Flexible Timings (24/7)</span>
+            <span className="flex items-center gap-1.5"><i className="fa-solid fa-check text-emerald-400"></i> Slots in Your Time Zone</span>
           </div>
         </div>
       </footer>
