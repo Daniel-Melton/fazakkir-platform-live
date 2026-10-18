@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { getAttribution } from "@/lib/attribution";
 
 const COUNTRY_OPTIONS = [
   { flag: "🇺🇸", name: "USA", code: "+1" },
@@ -82,6 +83,7 @@ function LeadFormContent() {
           totalPrice: planPriceValue,
           preferredTime,
           timezone: userTimezone,
+          attribution: getAttribution(),
         }),
       });
 

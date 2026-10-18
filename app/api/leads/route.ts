@@ -24,6 +24,15 @@ export async function POST(req: Request) {
     const preferredTime = body.preferredTime || body.preferred_time || "Evening";
     const timezone = body.timezone || "UTC";
 
+    // Campaign attribution (UTM and click ids). Needs the columns from supabase-leads-attribution.sql.
+    const ATTR_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "landing_page", "referrer"] as const;
+    const rawAttr = body.attribution && typeof body.attribution === "object" ? body.attribution : {};
+    const attribution: Record<string, string | null> = {};
+    for (const k of ATTR_KEYS) {
+      const v = (rawAttr as Record<string, unknown>)[k];
+      attribution[k] = typeof v === "string" && v.trim() ? v.trim().slice(0, 200) : null;
+    }
+
     // حقول حاسبة الأسعار والخصومات
     const studentsCount = Number(body.studentsCount || body.student_count || 1);
     const planName = body.planName || "Standard";
@@ -72,6 +81,7 @@ export async function POST(req: Request) {
           preferred_time: preferredTime,
           timezone: timezone,
           status: "New",
+          ...attribution,
         },
       ])
       .select()

@@ -19,6 +19,13 @@ interface Lead {
   total_price?: string;
   preferred_time?: string | null;
   timezone?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  gclid?: string | null;
+  fbclid?: string | null;
+  landing_page?: string | null;
+  referrer?: string | null;
   [key: string]: any;
 }
 
@@ -29,6 +36,15 @@ const STATUS_COLORS: Record<string, string> = {
   Enrolled: "bg-emerald-100 text-emerald-800 border-emerald-300",
   Cancelled: "bg-rose-100 text-rose-800 border-rose-300",
 };
+
+// Where the lead came from, based on the campaign columns saved with each enquiry.
+function leadSource(lead: Lead): { label: string; paid: boolean } {
+  if (lead.gclid) return { label: "Google Ads", paid: true };
+  if (lead.fbclid) return { label: "Meta Ads", paid: true };
+  if (lead.utm_source) return { label: lead.utm_source, paid: lead.utm_medium === "cpc" || lead.utm_medium === "paid_social" };
+  if (lead.referrer) return { label: lead.referrer, paid: false };
+  return { label: "Direct", paid: false };
+}
 
 export default function AdminLeadsPage() {
   const [adminKey, setAdminKey] = useState("");
@@ -334,6 +350,7 @@ export default function AdminLeadsPage() {
                   <th className="py-4 px-6">Student / Parent</th>
                   <th className="py-4 px-6">Contact & WhatsApp</th>
                   <th className="py-4 px-6">Course & Plan</th>
+                  <th className="py-4 px-6">Source</th>
                   <th className="py-4 px-6">Date</th>
                   <th className="py-4 px-6">Status</th>
                   <th className="py-4 px-6 text-right">Quick Action</th>
@@ -342,7 +359,7 @@ export default function AdminLeadsPage() {
               <tbody className="divide-y divide-slate-100">
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400">
+                    <td colSpan={7} className="py-12 text-center text-slate-400">
                       <i className="fa-solid fa-inbox text-3xl mb-2 block"></i>
                       No leads match the current filters.
                     </td>
@@ -394,6 +411,34 @@ export default function AdminLeadsPage() {
                           </div>
                         </td>
                         
+                        <td className="py-4 px-6">
+                          {(() => {
+                            const src = leadSource(lead);
+                            return (
+                              <>
+                                <span
+                                  className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                                    src.paid
+                                      ? "bg-amber-50 text-amber-900 border-amber-200"
+                                      : "bg-slate-100 text-slate-700 border-slate-200"
+                                  }`}
+                                >
+                                  {src.label}
+                                </span>
+                                {lead.utm_campaign && (
+                                  <div className="text-[11px] text-slate-500 mt-1 max-w-[180px] truncate" title={lead.utm_campaign}>
+                                    {lead.utm_campaign}
+                                  </div>
+                                )}
+                                {lead.landing_page && (
+                                  <div className="text-[11px] text-slate-400 max-w-[180px] truncate" title={lead.landing_page}>
+                                    {lead.landing_page}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </td>
                         <td className="py-4 px-6 text-xs text-slate-500 whitespace-nowrap">
                           {lead.created_at
                             ? new Date(lead.created_at).toLocaleDateString("en-US", {

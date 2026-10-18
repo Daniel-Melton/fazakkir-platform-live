@@ -4,6 +4,10 @@ import Script from "next/script";
 import "./globals.css";
 import { SITE_URL } from "@/lib/seo";
 import Analytics from "@/components/Analytics";
+import AttributionCapture from "@/components/AttributionCapture";
+import CookieConsent from "@/components/CookieConsent";
+import { GoogleTagManager } from '@next/third-parties/google';
+
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -117,9 +121,12 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased bg-slate-200/70 text-slate-900 selection:bg-emerald-100 selection:text-emerald-900 min-h-screen">
         <Analytics />
+        <AttributionCapture />
+        <CookieConsent enabled={Boolean(process.env.NEXT_PUBLIC_GTM_ID)} />
         <div className="max-w-[1360px] mx-auto bg-slate-50 shadow-[0_0_50px_-12px_rgba(0,0,0,0.12)] min-h-screen border-x border-slate-200/80">
           {children}
         </div>
+        <GoogleTagManager gtmId="GTM-T254Q7NR" />
       </body>
     </html>
   );
