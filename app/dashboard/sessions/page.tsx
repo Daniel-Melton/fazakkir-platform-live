@@ -311,7 +311,8 @@ export default function SessionsPage() {
       {/* المودالز القائمة بدون تغيير في الوظائف */}
       {selectedSessionForReport && (
         <ReportModal
-          session={selectedSessionForReport as any}
+          sessionId={selectedSessionForReport.id}
+          isOpen={true}
           authToken={token}
           onClose={() => setSelectedSessionForReport(null)}
           onSuccess={() => {
@@ -323,9 +324,10 @@ export default function SessionsPage() {
 
       {selectedSessionForReschedule && (
         <RescheduleModal
-          session={selectedSessionForReschedule as any}
+          sessionId={selectedSessionForReschedule.id}
+          scheduledAtUtc={selectedSessionForReschedule.scheduled_at_utc}
+          isOpen={true}
           authToken={token}
-          role={role}
           onClose={() => setSelectedSessionForReschedule(null)}
           onSuccess={() => {
             setSelectedSessionForReschedule(null);
