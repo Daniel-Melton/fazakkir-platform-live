@@ -26,7 +26,10 @@ export function getAttribution(): Attribution {
   if (!saved.landing_page || Object.keys(fresh).length > 0) {
     let ref: string | undefined;
     try {
-      ref = document.referrer ? new URL(document.referrer).hostname : undefined;
+      const host = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : "";
+      // Ignore our own site and Vercel dashboard/preview hosts: they are not real traffic sources.
+      const ignored = /(^|\.)(fazakkir\.com|vercel\.com|vercel\.app|vercel\.live)$/i.test(host);
+      ref = host && !ignored ? host : undefined;
     } catch {}
     saved = { ...saved, ...fresh, landing_page: window.location.pathname, referrer: ref };
     try {
