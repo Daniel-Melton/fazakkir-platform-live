@@ -7,9 +7,9 @@ import Link from "next/link";
 type Currency = "USD" | "GBP" | "EUR";
 
 const CURRENCY_CONFIG: Record<Currency, { symbol: string; ratePerHalfHour: number }> = {
-  USD: { symbol: "$", ratePerHalfHour: 8.5 }, // متوسط 8.5$ لنصف ساعة (تنافسي جداً)
-  GBP: { symbol: "£", ratePerHalfHour: 6.8 },
-  EUR: { symbol: "€", ratePerHalfHour: 7.9 },
+  USD: { symbol: "$", ratePerHalfHour: 4.625 }, // 9.25$ للساعة الكاملة (60 دقيقة) / 4.625$ لنصف الساعة
+  GBP: { symbol: "£", ratePerHalfHour: 3.7 },
+  EUR: { symbol: "€", ratePerHalfHour: 4.3 },
 };
 
 export default function PricingCalculator() {
@@ -23,7 +23,7 @@ export default function PricingCalculator() {
   const currentCfg = CURRENCY_CONFIG[currency];
 
   // الحسبة الشهرية: (عدد الأسابيع 4.33 * الحصص * سعر المدة)
-  const durationMultiplier = sessionDuration === 60 ? 1.85 : 1.0; // خصم طفيف لحصة الساعة
+  const durationMultiplier = sessionDuration === 60 ? 2.0 : 1.0; // ساعة كاملة = ضعف نصف الساعة ليكون 9.25$ للساعة
   const baseMonthlyPerStudent = Math.round(classesPerWeek * 4.33 * currentCfg.ratePerHalfHour * durationMultiplier);
   
   // حساب خصم الأشقاء: لو أكثر من طالب يُطبق خصم 10% إلى 15%

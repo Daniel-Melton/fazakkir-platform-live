@@ -1,6 +1,6 @@
 // Single source of truth for offer facts used in copy, metadata and schema.
 export const OFFER = {
-  fromPriceUsd: 74,           // cheapest monthly plan (2 lessons a week)
+  fromPriceUsd: 40,           // cheapest monthly plan (2 lessons a week @ 30 mins)
   siblingDiscountPercent: 12, // matches the pricing calculator
   freeClasses: 2,
 } as const;
