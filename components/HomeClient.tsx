@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import LeadForm from "@/components/LeadForm";
 import Image from "next/image";
 import Link from "next/link"; 
+import { useState } from "react"
 
 export default function HomeClient() {
   const chooseCourse = (courseTitle: string) => {
@@ -13,7 +14,8 @@ export default function HomeClient() {
     }
     document.getElementById("registerForm")?.scrollIntoView({ behavior: "smooth" });
   };
-
+    // حالة لتتبع الكارت المفتوح باللمس على الموبايل
+    const [flippedCardIndex, setFlippedCardIndex] = useState<number | null>(null);
   return (
     <main className="min-h-screen bg-slate-50 relative">
       <Navbar />
@@ -210,95 +212,103 @@ export default function HomeClient() {
 
       {/* 3. 3D Flip Cards: Tutor Quality & Vetting Standards */}
       <section id="tutor-standards" className="py-16 sm:py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
-              <i className="fa-solid fa-user-graduate"></i> Academic Excellence
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">How We Handpick Our Tutors</h2>
-            <p className="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
-              Hover or tap on each card to discover the rigorous vetting steps every Fazakkir scholar undergoes.
-            </p>
-          </div>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14">
+      <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-3">
+        <i className="fa-solid fa-user-graduate"></i> Academic Excellence
+      </span>
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">How We Handpick Our Tutors</h2>
+      <p className="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
+        Hover or tap on each card to discover the rigorous vetting steps every Fazakkir scholar undergoes.
+      </p>
+    </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: "fa-mosque",
-                badge: "Requirement 01",
-                title: "Al-Azhar Certification",
-                short: "Graduates of Islamic & Quranic studies from Al-Azhar University.",
-                backTitle: "Authentic Pedigree",
-                backDetails: "Every teacher holds an authentic connected Sanad back to the Prophet ﷺ, guaranteeing pristine articulation and Tajweed rules.",
-              },
-              {
-                icon: "fa-comments",
-                badge: "Requirement 02",
-                title: "Fluent English Skills",
-                short: "Clear, fluent English to engage Western students.",
-                backTitle: "Zero Language Barrier",
-                backDetails: "We screen rigorously for English clarity so young children raised in the US, UK, and Canada feel completely comfortable and understood.",
-              },
-              {
-                icon: "fa-heart-pulse",
-                badge: "Requirement 03",
-                title: "Child Psychology",
-                short: "Specialized in patience, positive encouragement & engagement.",
-                backTitle: "Gentle Mentorship",
-                backDetails: "Teachers are trained in child psychology to foster a loving relationship with the Quran, replacing strictness with motivating rewards.",
-              },
-              {
-                icon: "fa-user-shield",
-                badge: "Requirement 04",
-                title: "Safe & Monitored",
-                short: "Background verified with dedicated female tutors for sisters.",
-                backTitle: "Family Peace of Mind",
-                backDetails: "Dedicated certified female scholars are available for sisters and young girls, with supervisory quality checks conducted routinely.",
-              },
-            ].map((card, i) => (
-              <div key={i} className="group perspective-1000 h-72 cursor-pointer">
-                <div className="relative w-full h-full duration-500 transform-style-3d group-hover:rotate-y-180 transition-transform">
-                  {/* Front Side */}
-                  <div className="absolute inset-0 w-full h-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between backface-hidden">
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xl font-bold">
-                          <i className={`fa-solid ${card.icon}`}></i>
-                        </div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-100/60 px-2.5 py-1 rounded-full">
-                          {card.badge}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-slate-900 mb-2">{card.title}</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed">{card.short}</p>
-                    </div>
-
-                    <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1.5 pt-2 border-t border-slate-100">
-                      <span>Hover / Tap for details</span>
-                      <i className="fa-solid fa-arrow-rotate-right text-[10px]"></i>
-                    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {[
+        {
+          icon: "fa-mosque",
+          badge: "Requirement 01",
+          title: "Al-Azhar Certification",
+          short: "Graduates of Islamic & Quranic studies from Al-Azhar University.",
+          backTitle: "Authentic Pedigree",
+          backDetails: "Every teacher holds an authentic connected Sanad back to the Prophet ﷺ, guaranteeing pristine articulation and Tajweed rules.",
+        },
+        {
+          icon: "fa-comments",
+          badge: "Requirement 02",
+          title: "Fluent English Skills",
+          short: "Clear, fluent English to engage Western students.",
+          backTitle: "Zero Language Barrier",
+          backDetails: "We screen rigorously for English clarity so young children raised in the US, UK, and Canada feel completely comfortable and understood.",
+        },
+        {
+          icon: "fa-heart-pulse",
+          badge: "Requirement 03",
+          title: "Child Psychology",
+          short: "Specialized in patience, positive encouragement & engagement.",
+          backTitle: "Gentle Mentorship",
+          backDetails: "Teachers are trained in child psychology to foster a loving relationship with the Quran, replacing strictness with motivating rewards.",
+        },
+        {
+          icon: "fa-user-shield",
+          badge: "Requirement 04",
+          title: "Safe & Monitored",
+          short: "Background verified with dedicated female tutors for sisters.",
+          backTitle: "Family Peace of Mind",
+          backDetails: "Dedicated certified female scholars are available for sisters and young girls, with supervisory quality checks conducted routinely.",
+        },
+      ].map((card, i) => (
+        <div 
+          key={i} 
+          onClick={() => setFlippedCardIndex((prev) => (prev === i ? null : i))}
+          className="group perspective-1000 h-72 cursor-pointer select-none"
+        >
+          <div 
+            className={`relative w-full h-full duration-500 transform-style-3d transition-transform ${
+              flippedCardIndex === i ? "rotate-y-180" : "group-hover:rotate-y-180"
+            }`}
+          >
+            {/* Front Side */}
+            <div className="absolute inset-0 w-full h-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between backface-hidden">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center text-xl font-bold">
+                    <i className={`fa-solid ${card.icon}`}></i>
                   </div>
-
-                  {/* Back Side */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-emerald-800 to-teal-950 text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between rotate-y-180 backface-hidden">
-                    <div>
-                      <div className="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
-                        {card.backTitle}
-                      </div>
-                      <p className="text-xs text-slate-200 leading-relaxed">{card.backDetails}</p>
-                    </div>
-
-                    <div className="text-[11px] font-semibold text-emerald-300/80 flex items-center gap-1.5 border-t border-white/10 pt-2">
-                      <i className="fa-solid fa-circle-check text-emerald-400"></i>
-                      <span>Verified standard</span>
-                    </div>
-                  </div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-100/60 px-2.5 py-1 rounded-full">
+                    {card.badge}
+                  </span>
                 </div>
+                <h3 className="text-lg font-extrabold text-slate-900 mb-2">{card.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">{card.short}</p>
               </div>
-            ))}
+
+              <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                <span>Hover / Tap for details</span>
+                <i className="fa-solid fa-arrow-rotate-right text-[10px]"></i>
+              </div>
+            </div>
+
+            {/* Back Side */}
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-emerald-800 to-teal-950 text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between rotate-y-180 backface-hidden">
+              <div>
+                <div className="text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
+                  {card.backTitle}
+                </div>
+                <p className="text-xs text-slate-200 leading-relaxed">{card.backDetails}</p>
+              </div>
+
+              <div className="text-[11px] font-semibold text-emerald-300/80 flex items-center gap-1.5 border-t border-white/10 pt-2">
+                <i className="fa-solid fa-circle-check text-emerald-400"></i>
+                <span>Verified standard</span>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* 4. How Learning Works (Red Theme 1, 2, 3) */}
       <section id="how-it-works" className="py-20 sm:py-24 bg-gradient-to-b from-[#fff1f2] to-white relative">
