@@ -80,13 +80,13 @@ export default function Navbar() {
 
         {/* Action Button & Mobile Menu Button */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <a
-            href="#registerForm"
+          <Link
+            href="/#registerForm"
             className="inline-flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-600 to-teal-800 text-white px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md shadow-emerald-700/25 hover:shadow-lg hover:-translate-y-0.5 transition-all flex-shrink-0"
           >
             <span>Free Trial</span>
             <i className="fa-solid fa-arrow-right text-[10px] sm:text-xs"></i>
-          </a>
+          </Link>
 
           {/* زر فتح وإغلاق القائمة للموبايل */}
           <button
