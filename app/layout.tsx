@@ -33,6 +33,13 @@ export const metadata: Metadata = {
   authors: [{ name: "Fazakkir Academy Academic Board" }],
   creator: "Fazakkir Academy",
   publisher: "Fazakkir Academy",
+
+  // ==========================================
+  // [إضافة 1]: إعداد Google Search Console Verification
+  // ==========================================
+  verification: {
+    google: "mORn7MFdqV8T0Zezo3ZBfH-VFMf-hRJlkQ4OYyX9WFI",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
