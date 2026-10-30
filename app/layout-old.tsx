@@ -91,7 +91,7 @@ export default function RootLayout({
       "Online educational academy teaching the Holy Quran, Tajweed, and Arabic language to children and families living in Western countries.",
     sameAs: [
       "https://facebook.com/fazakkir",
-      "https://instagram.com/fazakkir",
+      "https://www.instagram.com/fazakkiracademy",
     ],
     offers: {
       "@type": "Offer",

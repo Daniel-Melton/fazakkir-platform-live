@@ -619,6 +619,9 @@ export default function HomeClient() {
             © 2026 Fazakkir Academy. All rights reserved.
           </p>
         </div>
+           import CookieSettingsLink from "@/components/CookieSettingsLink";
+   // داخل الـ footer:
+   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
       </footer>
     </main>
   );

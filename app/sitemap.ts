@@ -7,6 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((p) => p.live !== false && p.index !== false)
     .map((p) => ({
       url: `${SITE_URL}${p.path}`,
+      lastModified: p.lastModified ? new Date(p.lastModified) : new Date(), // اختياري لتحسين الأرشفة
       changeFrequency: "monthly" as const,
       priority: p.priority ?? 0.6,
     }));
