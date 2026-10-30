@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import CookieSettingsLink from '@/components/CookieSettingsLink';
 import Link from "next/link";
 
 type Currency = "USD" | "GBP" | "EUR";

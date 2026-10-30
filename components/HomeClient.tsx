@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/Navbar";
 import LeadForm from "@/components/LeadForm";
+import CookieSettingsLink from '@/components/CookieSettingsLink';
 import Image from "next/image";
 import Link from "next/link"; 
 import { useState } from "react"

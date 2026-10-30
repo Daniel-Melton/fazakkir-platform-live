@@ -3,6 +3,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata("courses");
+import CookieSettingsLink from '@/components/CookieSettingsLink';
 
 export const revalidate = 60;
 

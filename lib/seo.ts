@@ -14,6 +14,7 @@ export type PageSeo = {
   index?: boolean;          // default true
   live?: boolean;           // false = planned page, kept out of the sitemap
   priority?: number;
+  lastModified?: string | Date;
 };
 
 export const PAGES = {
