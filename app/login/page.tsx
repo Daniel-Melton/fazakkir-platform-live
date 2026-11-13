@@ -3,6 +3,7 @@
 import React, { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { homePathForRole } from "@/lib/auth/roles";
 
 function LoginContent() {
   const supabase = createClient();
@@ -13,7 +14,7 @@ function LoginContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get("redirect") || "/dashboard/sessions";
+  const redirectTarget = searchParams.get("redirect") || "/dashboard";
   const authError = searchParams.get("error");
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
@@ -39,15 +40,10 @@ function LoginContent() {
           .eq("id", data.user.id)
           .single();
 
-        let targetUrl = redirectTarget;
-
-        if (profile?.role === "super_admin" || profile?.role === "academic_supervisor") {
-          targetUrl = "/dashboard/supervisor/enrollments";
-        } else if (profile?.role === "parent_student") {
-          targetUrl = "/dashboard/parent";
-        } else if (profile?.role === "tutor") {
-          targetUrl = "/dashboard/sessions";
-        }
+        // وجهة صريحة في الرابط (?redirect=) لها الأولوية، وإلا فالصفحة الرئيسية المناسبة للدور
+        const explicit = searchParams.get("redirect");
+        const targetUrl =
+          explicit && explicit.startsWith("/") && !explicit.startsWith("//") ? explicit : homePathForRole(profile?.role);
 
         window.location.href = targetUrl;
       }

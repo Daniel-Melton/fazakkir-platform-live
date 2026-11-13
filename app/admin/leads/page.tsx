@@ -238,7 +238,7 @@ export default function AdminLeadsPage() {
 
             {/* أزرار إدارة الكورسات والمقالات */}
             <Link
-              href="/admin/courses/new"
+              href="/dashboard/content/course/new"
               className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
             >
               <i className="fa-solid fa-plus text-[10px]"></i>
@@ -246,7 +246,7 @@ export default function AdminLeadsPage() {
             </Link>
 
             <Link
-              href="/admin/courses"
+              href="/dashboard/content"
               className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
             >
               <i className="fa-solid fa-book-open text-[11px]"></i>
@@ -254,7 +254,7 @@ export default function AdminLeadsPage() {
             </Link>
 
             <Link
-              href="/admin/articles"
+              href="/dashboard/content"
               className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
             >
               <i className="fa-solid fa-newspaper text-[11px]"></i>

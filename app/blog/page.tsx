@@ -11,7 +11,7 @@ export default async function BlogIndexPage() {
   const { data: articles } = await supabase
     .from("articles")
     .select("*")
-    .eq("published", true)
+    .eq("status", "published")
     .order("created_at", { ascending: false });
 
   const featured = articles && articles.length > 0 ? articles[0] : null;

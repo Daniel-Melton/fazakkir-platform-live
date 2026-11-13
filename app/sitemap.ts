@@ -12,18 +12,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: p.priority ?? 0.6,
     }));
 
-  const { data: courses } = await supabase.from("courses").select("slug, created_at");
+  // المنشور فقط، ومع استبعاد ما وُسم بـ noindex من لوحة التحكم
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("slug, created_at, updated_at")
+    .eq("status", "published")
+    .eq("robots_index", true);
   const coursePages: MetadataRoute.Sitemap = (courses || []).map((course) => ({
     url: `${SITE_URL}/courses/${course.slug}`,
-    lastModified: new Date(course.created_at || Date.now()),
+    lastModified: new Date(course.updated_at || course.created_at || Date.now()),
     changeFrequency: "weekly",
     priority: 0.85,
   }));
 
-  const { data: articles } = await supabase.from("articles").select("slug, created_at").eq("published", true);
+  const { data: articles } = await supabase
+    .from("articles")
+    .select("slug, created_at, updated_at")
+    .eq("status", "published")
+    .eq("robots_index", true);
   const articlePages: MetadataRoute.Sitemap = (articles || []).map((art) => ({
     url: `${SITE_URL}/blog/${art.slug}`,
-    lastModified: new Date(art.created_at || Date.now()),
+    lastModified: new Date(art.updated_at || art.created_at || Date.now()),
     changeFrequency: "weekly",
     priority: 0.75,
   }));
