@@ -17,7 +17,9 @@ export interface NotificationPayload {
     | "reschedule_request"
     | "reschedule_decision"
     | "session_report"
-    | "new_trial_booked";
+    | "new_trial_booked"
+    | "content_review_request"
+    | "content_review_decision";
   title: string;
   body: string;
   link?: string;

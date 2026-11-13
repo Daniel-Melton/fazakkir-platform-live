@@ -11,6 +11,7 @@ export default async function AllCoursesPage() {
   const { data: courses } = await supabase
     .from("courses")
     .select("*")
+    .eq("status", "published")
     .order("created_at", { ascending: true });
 
   return (

@@ -126,3 +126,20 @@ body {
 .animate-float-reverse {
   animation: floatReverse 7s ease-in-out infinite;
 }
+/* CMS rich-text editor (Tiptap) */
+.cms-editor .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  float: inline-start;
+  height: 0;
+  pointer-events: none;
+}
+.cms-editor .tiptap img.ProseMirror-selectednode,
+.cms-editor .tiptap div[data-youtube-video].ProseMirror-selectednode {
+  outline: 3px solid #059669;
+  outline-offset: 2px;
+}
+.cms-editor .tiptap div[data-youtube-video] iframe {
+  max-width: 100%;
+  border-radius: 0.75rem;
+}

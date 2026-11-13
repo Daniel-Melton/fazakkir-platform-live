@@ -3,6 +3,8 @@ import Link from "next/link";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { ROLE_LABELS_AR } from "@/lib/auth/roles";
+import type { UserRole } from "@/types/database";
 
 export default async function DashboardLayout({
   children,
@@ -45,9 +47,24 @@ export default async function DashboardLayout({
 
   // تخصيص تبويبات التنقل العلوية الكبسولية بحسب دور المستخدم
   const navTabs = (() => {
+    const contentTabs = [{ label: "المحتوى", href: "/dashboard/content" }];
+    const adminTabs = [
+      { label: "طابور الموافقات", href: "/dashboard/admin/approvals" },
+      { label: "المحررون", href: "/dashboard/admin/editors" },
+    ];
     switch (role) {
-      case "academic_supervisor":
       case "super_admin":
+        return [
+          { label: "تسكين الطلاب", href: "/dashboard/supervisor/enrollments" },
+          { label: "طلبات التعديل", href: "/dashboard/supervisor/reschedule" },
+          ...contentTabs,
+          ...adminTabs,
+        ];
+      case "admin":
+        return [...contentTabs, ...adminTabs];
+      case "editor":
+        return [...contentTabs, { label: "كلمة المرور", href: "/dashboard/account/password" }];
+      case "academic_supervisor":
         return [
           { label: "تسكين الطلاب", href: "/dashboard/supervisor/enrollments" },
           { label: "طلبات التعديل", href: "/dashboard/supervisor/reschedule" },
@@ -58,6 +75,7 @@ export default async function DashboardLayout({
           { label: "جدول حصصي", href: "/dashboard/sessions" },
         ];
       case "parent":
+      case "parent_student":
         return [
           { label: "حصص الأبناء", href: "/dashboard/parent" },
           { label: "جدول المواعيد", href: "/dashboard/sessions" },
@@ -89,7 +107,7 @@ export default async function DashboardLayout({
           </Link>
 
           {/* كبسولات التنقل */}
-          <nav className="flex items-center bg-slate-50 p-1.5 rounded-full border border-slate-100 text-xs font-semibold gap-1">
+          <nav className="flex flex-wrap items-center justify-center bg-slate-50 p-1.5 rounded-3xl border border-slate-100 text-xs font-semibold gap-1">
             {navTabs.map((tab) => (
               <Link
                 key={tab.href}
@@ -116,7 +134,7 @@ export default async function DashboardLayout({
                   {fullName}
                 </div>
                 <div className="text-[10px] text-slate-400 font-medium">
-                  {role === "academic_supervisor" ? "مشرف أكاديمي" : role === "tutor" ? "معلم" : "ولي أمر"}
+                  {ROLE_LABELS_AR[role as UserRole] ?? "مستخدم"}
                 </div>
               </div>
             </div>

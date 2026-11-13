@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { homePathForRole, rolesForPath } from "@/lib/auth/roles";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -43,38 +44,49 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  const isApi = pathname.startsWith("/api/");
+  const allowedRoles = rolesForPath(pathname);
+  const needsAuth = pathname.startsWith("/dashboard") || allowedRoles !== null;
 
-  // 1. حماية مسارات الـ Dashboard من غير المسجلين
-  if (!user && pathname.startsWith("/dashboard")) {
+  // 1. حماية المسارات من غير المسجلين
+  if (!user && needsAuth) {
+    if (isApi) {
+      return NextResponse.json({ success: false, error: "يجب تسجيل الدخول أولاً" }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.search = "";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
-  // 2. فحص صلاحيات المشرفين لمسارات supervisor
-  if (user && pathname.startsWith("/dashboard/supervisor")) {
+  // 2. فحص الدور للمسارات المحمية (RBAC) — ومنع الحسابات المعطّلة
+  if (user && (allowedRoles !== null || pathname === "/login")) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, disabled_at")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    const isSupervisor =
-      profile?.role === "super_admin" || profile?.role === "academic_supervisor";
+    const role = profile && !profile.disabled_at ? (profile.role as string) : null;
 
-    if (!isSupervisor) {
+    if (allowedRoles !== null && (!role || !(allowedRoles as string[]).includes(role))) {
+      if (isApi) {
+        return NextResponse.json({ success: false, error: "ليست لديك صلاحية" }, { status: 403 });
+      }
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard/sessions";
+      url.pathname = role ? homePathForRole(role) : "/";
+      url.search = "";
       return NextResponse.redirect(url);
     }
-  }
 
-  // 3. إذا كان مسجلاً وحاول فتح صفحة الدخول، يتم توجيهه للوحة التحكم
-  if (user && pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard/sessions";
-    return NextResponse.redirect(url);
+    // 3. إذا كان مسجلاً وحاول فتح صفحة الدخول، يتم توجيهه للوحة المناسبة لدوره
+    if (pathname === "/login" && role) {
+      const url = request.nextUrl.clone();
+      url.pathname = homePathForRole(role);
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;

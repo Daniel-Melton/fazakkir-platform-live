@@ -144,3 +144,96 @@ export function excerptFrom(text: string | null | undefined, max = 155): string 
   if (clean.length <= max) return clean;
   return clean.slice(0, max).replace(/\s+\S*$/, "") + "…";
 }
+
+// ---------------------------------------------------------------------
+// صفحات المحتوى المُدارة من لوحة التحكم (مقالات + كورسات) بحقول SEO كاملة
+// ---------------------------------------------------------------------
+export function absoluteUrl(pathOrUrl: string): string {
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  return `${SITE_URL}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
+}
+
+export type ContentSeoRow = {
+  title: string;
+  slug: string;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  canonical_url?: string | null;
+  robots_index?: boolean | null;
+  robots_follow?: boolean | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  og_image?: string | null;
+  cover_image?: string | null;
+  cover_image_alt?: string | null;
+  tags?: string[] | null;
+  author?: string | null;
+  published_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+const isHttp = (v?: string | null): v is string => !!v && /^https?:\/\//i.test(v);
+
+export function buildContentMetadata(
+  kind: "article" | "course",
+  row: ContentSeoRow,
+  fallbackDescription: string,
+): Metadata {
+  const path = `${kind === "article" ? "/blog" : "/courses"}/${row.slug}`;
+  const metaTitle = row.meta_title?.trim();
+  const description = row.meta_description?.trim() || fallbackDescription;
+  const socialTitle = row.og_title?.trim() || metaTitle || `${row.title} | Fazakkir`;
+  const socialDescription = row.og_description?.trim() || description;
+  const ogImage = row.og_image?.trim() ?? "";
+  const image =
+    /^https?:\/\//i.test(ogImage) || ogImage.startsWith("/")
+      ? ogImage
+      : isHttp(row.cover_image)
+        ? row.cover_image
+        : DEFAULT_OG_IMAGE;
+  const imageAlt = row.cover_image_alt?.trim() || row.title;
+  const published = row.published_at ?? row.created_at ?? undefined;
+
+  return {
+    // عنوان الميتا المخصص يُستخدم كما هو (بدون إضافة " | Fazakkir") ليطابق عدّاد الأحرف في المحرر
+    title: metaTitle ? { absolute: metaTitle } : row.title,
+    description,
+    keywords: row.tags?.length ? row.tags : undefined,
+    alternates: { canonical: row.canonical_url?.trim() || path },
+    robots: {
+      index: row.robots_index !== false,
+      follow: row.robots_follow !== false,
+    },
+    openGraph:
+      kind === "article"
+        ? {
+            type: "article",
+            url: path,
+            siteName: SITE_NAME,
+            title: socialTitle,
+            description: socialDescription,
+            locale: "en_US",
+            images: [{ url: image, alt: imageAlt }],
+            publishedTime: published,
+            modifiedTime: row.updated_at ?? published,
+            authors: row.author ? [row.author] : undefined,
+            tags: row.tags ?? undefined,
+          }
+        : {
+            type: "website",
+            url: path,
+            siteName: SITE_NAME,
+            title: socialTitle,
+            description: socialDescription,
+            locale: "en_US",
+            images: [{ url: image, alt: imageAlt }],
+          },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description: socialDescription,
+      images: [{ url: image, alt: imageAlt }],
+    },
+  };
+}

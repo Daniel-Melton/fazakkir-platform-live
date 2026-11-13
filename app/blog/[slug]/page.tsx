@@ -3,7 +3,9 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabaseClient";
 import type { Metadata } from "next";
-import { buildDynamicMetadata, excerptFrom } from "@/lib/seo";
+import { buildContentMetadata, excerptFrom } from "@/lib/seo";
+import { articleSchema, breadcrumbSchema } from "@/lib/schema";
+import { JsonLd } from "@/components/JsonLd";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 
@@ -15,15 +17,9 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { data: post } = await supabase.from("articles").select("title, content, cover_image").eq("slug", slug).single();
+  const { data: post } = await supabase.from("articles").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!post) return { title: "Article not found", robots: { index: false, follow: false } };
-  return buildDynamicMetadata({
-    path: `/blog/${slug}`,
-    title: post.title,
-    description: excerptFrom(post.content),
-    image: post.cover_image && /^https?:\/\//.test(post.cover_image) ? post.cover_image : undefined,
-    type: "article",
-  });
+  return buildContentMetadata("article", post, post.excerpt?.trim() || excerptFrom(post.content));
 }
 
 const FALLBACK_IMAGE =
@@ -36,7 +32,8 @@ export default async function BlogPostPage({ params }: Props) {
     .from("articles")
     .select("*")
     .eq("slug", slug)
-    .single();
+    .eq("status", "published")
+    .maybeSingle();
 
   if (error || !post) {
     notFound();
@@ -48,8 +45,33 @@ export default async function BlogPostPage({ params }: Props) {
       ? post.cover_image
       : FALLBACK_IMAGE;
 
+  const description = post.meta_description?.trim() || post.excerpt?.trim() || excerptFrom(post.content);
+
   return (
     <main className="min-h-screen bg-slate-50 relative selection:bg-emerald-100 selection:text-emerald-900">
+      <JsonLd
+        data={[
+          articleSchema({
+            slug: post.slug,
+            title: post.title,
+            description,
+            image: coverImage,
+            author: post.author,
+            authorRole: post.author_role,
+            category: post.category,
+            tags: post.tags,
+            wordCount: post.word_count,
+            publishedAt: post.published_at ?? post.created_at,
+            updatedAt: post.updated_at,
+            canonicalUrl: post.canonical_url,
+          }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Articles", path: "/blog" },
+            { name: post.title, path: `/blog/${post.slug}` },
+          ]),
+        ]}
+      />
       <Navbar />
 
       <article className="pt-10 pb-16">
@@ -103,7 +125,11 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="rounded-3xl overflow-hidden shadow-lg border border-slate-200 aspect-[16/9] w-full relative bg-slate-200">
             <img
               src={coverImage}
-              alt={post.title}
+              alt={post.cover_image_alt?.trim() || post.title}
+              width={1600}
+              height={900}
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           </div>

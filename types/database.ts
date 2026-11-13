@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'academic_supervisor' | 'tutor' | 'parent_student';
+export type UserRole = 'super_admin' | 'admin' | 'editor' | 'academic_supervisor' | 'tutor' | 'parent_student';
 export type EnrollmentStatus = 'trial_pending' | 'trial_completed' | 'active' | 'paused' | 'cancelled';
 export type SessionStatus = 'scheduled' | 'completed' | 'cancelled_by_student' | 'cancelled_by_tutor' | 'rescheduled';
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
@@ -12,6 +12,8 @@ export interface Profile {
   timezone: string;
   created_at: string;
   updated_at: string;
+  disabled_at?: string | null;
+  created_by?: string | null;
 }
 
 export interface Tutor {

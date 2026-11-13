@@ -4,7 +4,14 @@ import Navbar from "@/components/Navbar";
 import LeadForm from "@/components/LeadForm";
 import { supabase } from "@/lib/supabaseClient";
 import type { Metadata } from "next";
-import { buildDynamicMetadata, excerptFrom } from "@/lib/seo";
+import { buildContentMetadata, excerptFrom } from "@/lib/seo";
+import { courseLearningSchema, breadcrumbSchema } from "@/lib/schema";
+import { JsonLd } from "@/components/JsonLd";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+
+const COURSE_FALLBACK_DESCRIPTION =
+  "1-on-1 online course with Al-Azhar graduate tutors. Try 2 free classes, no credit card needed.";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -14,13 +21,9 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { data: course } = await supabase.from("courses").select("title, subtitle, summary").eq("slug", slug).single();
+  const { data: course } = await supabase.from("courses").select("*").eq("slug", slug).eq("status", "published").maybeSingle();
   if (!course) return { title: "Course not found", robots: { index: false, follow: false } };
-  return buildDynamicMetadata({
-    path: `/courses/${slug}`,
-    title: course.title,
-    description: excerptFrom(course.summary || course.subtitle) || "1-on-1 online course with Al-Azhar graduate tutors. Try 2 free classes, no credit card needed.",
-  });
+  return buildContentMetadata("course", course, excerptFrom(course.summary || course.subtitle) || COURSE_FALLBACK_DESCRIPTION);
 }
 
 export default async function CourseDetailPage({ params }: Props) {
@@ -30,14 +33,42 @@ export default async function CourseDetailPage({ params }: Props) {
     .from("courses")
     .select("*")
     .eq("slug", slug)
-    .single();
+    .eq("status", "published")
+    .maybeSingle();
 
   if (error || !course) {
     notFound();
   }
 
+  const description =
+    course.meta_description?.trim() || excerptFrom(course.summary || course.subtitle) || COURSE_FALLBACK_DESCRIPTION;
+
   return (
     <main className="min-h-screen bg-slate-50 relative">
+      <JsonLd
+        data={[
+          courseLearningSchema({
+            slug: course.slug,
+            title: course.title,
+            description,
+            image: course.cover_image,
+            category: course.category,
+            tags: course.tags,
+            badge: course.badge,
+            prerequisites: course.prerequisites,
+            outcomes: course.learning_outcomes,
+            levels: course.levels,
+            publishedAt: course.published_at ?? course.created_at,
+            updatedAt: course.updated_at,
+            canonicalUrl: course.canonical_url,
+          }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Courses", path: "/courses" },
+            { name: course.title, path: `/courses/${course.slug}` },
+          ]),
+        ]}
+      />
       <Navbar />
 
       {/* Course Banner */}
@@ -94,6 +125,30 @@ export default async function CourseDetailPage({ params }: Props) {
                 {course.summary}
               </p>
             </div>
+
+            {/* Featured image + long-form description (managed from the CMS) */}
+            {course.cover_image && (
+              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={course.cover_image}
+                  alt={course.cover_image_alt?.trim() || course.title}
+                  width={1280}
+                  height={720}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            )}
+
+            {course.body && (
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="prose prose-slate max-w-none prose-headings:font-extrabold prose-headings:text-slate-900 prose-h2:text-xl sm:prose-h2:text-2xl prose-h3:text-lg prose-h3:text-emerald-900 prose-p:text-slate-700 prose-img:rounded-2xl">
+                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>{course.body}</ReactMarkdown>
+                </div>
+              </div>
+            )}
 
             {/* Curriculum Roadmap */}
             <div className="space-y-4">
