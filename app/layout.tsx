@@ -10,14 +10,14 @@ import CookieConsent from "@/components/CookieConsent";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-jakarta-face",
   display: "swap",
 });
 
 const amiri = Amiri({
   subsets: ["arabic"],
   weight: ["700"],
-  variable: "--font-amiri",
+  variable: "--font-amiri-face",
   display: "swap",
 });
 
