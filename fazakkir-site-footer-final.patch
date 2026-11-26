@@ -1,0 +1,369 @@
+diff --git a/app/blog/[slug]/page.tsx b/app/blog/[slug]/page.tsx
+index f8b76a6..6c5c50c 100644
+--- a/app/blog/[slug]/page.tsx
++++ b/app/blog/[slug]/page.tsx
+@@ -8,6 +8,7 @@ import { articleSchema, breadcrumbSchema } from "@/lib/schema";
+ import { JsonLd } from "@/components/JsonLd";
+ import ReactMarkdown from "react-markdown";
+ import rehypeRaw from "rehype-raw";
++import SiteFooter from "@/components/SiteFooter";
+ 
+ interface Props {
+   params: Promise<{ slug: string }>;
+@@ -203,9 +204,7 @@ export default async function BlogPostPage({ params }: Props) {
+         </div>
+       </article>
+ 
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-8 text-center text-sm border-t border-emerald-950">
+-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/app/blog/page.tsx b/app/blog/page.tsx
+index 8fdaae5..ae86984 100644
+--- a/app/blog/page.tsx
++++ b/app/blog/page.tsx
+@@ -2,8 +2,8 @@ import Navbar from "@/components/Navbar";
+ import Link from "next/link";
+ import { supabase } from "@/lib/supabaseClient";
+ import { buildMetadata } from "@/lib/seo";
++import SiteFooter from "@/components/SiteFooter";
+ export const metadata = buildMetadata("blog");
+-import CookieSettingsLink from '@/components/CookieSettingsLink';
+ 
+ export const revalidate = 60;
+ 
+@@ -136,13 +136,7 @@ export default async function BlogIndexPage() {
+         </div>
+       </section>
+ 
+-      {/* Footer */}
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
+-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-           import CookieSettingsLink from "@/components/CookieSettingsLink";
+-   // داخل الـ footer:
+-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/app/courses/[slug]/page.tsx b/app/courses/[slug]/page.tsx
+index fab9426..ea97e92 100644
+--- a/app/courses/[slug]/page.tsx
++++ b/app/courses/[slug]/page.tsx
+@@ -9,6 +9,7 @@ import { courseLearningSchema, breadcrumbSchema } from "@/lib/schema";
+ import { JsonLd } from "@/components/JsonLd";
+ import ReactMarkdown from "react-markdown";
+ import rehypeRaw from "rehype-raw";
++import SiteFooter from "@/components/SiteFooter";
+ 
+ const COURSE_FALLBACK_DESCRIPTION =
+   "1-on-1 online course with Al-Azhar graduate tutors. Try 2 free classes, no credit card needed.";
+@@ -209,15 +210,7 @@ export default async function CourseDetailPage({ params }: Props) {
+         </div>
+       </section>
+ 
+-      {/* Footer */}
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
+-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-2">
+-          <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-          <p className="text-xs text-emerald-400/80">
+-            Contact: <a href="mailto:lonelywolf1452@gmail.com" className="hover:underline text-emerald-300">lonelywolf1452@gmail.com</a>
+-          </p>
+-        </div>
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/app/courses/page.tsx b/app/courses/page.tsx
+index 973587d..80a56a2 100644
+--- a/app/courses/page.tsx
++++ b/app/courses/page.tsx
+@@ -2,8 +2,8 @@ import Navbar from "@/components/Navbar";
+ import Link from "next/link";
+ import { supabase } from "@/lib/supabaseClient";
+ import { buildMetadata } from "@/lib/seo";
++import SiteFooter from "@/components/SiteFooter";
+ export const metadata = buildMetadata("courses");
+-import CookieSettingsLink from '@/components/CookieSettingsLink';
+ 
+ export const revalidate = 60;
+ 
+@@ -76,12 +76,7 @@ export default async function AllCoursesPage() {
+         </div>
+       </section>
+ 
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
+-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-           import CookieSettingsLink from "@/components/CookieSettingsLink";
+-   // داخل الـ footer:
+-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/app/parents/page.tsx b/app/parents/page.tsx
+index 955287c..472f89c 100644
+--- a/app/parents/page.tsx
++++ b/app/parents/page.tsx
+@@ -1,5 +1,6 @@
+ import React from "react";
+ import Link from "next/link";
++import SiteFooter from "@/components/SiteFooter";
+ import LeadForm from "@/components/LeadForm";
+ import { buildMetadata } from "@/lib/seo";
+ import { OFFER } from "@/lib/offer";
+@@ -168,7 +169,7 @@ export default function ParentsLandingPage() {
+       {/* =========================================================================
+           3. الشريط السفلي للضمان والراحة
+           ========================================================================= */}
+-      <footer className="relative z-10 py-14 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
++      <section className="relative z-10 py-14 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+         <div className="max-w-5xl mx-auto px-4 text-center">
+           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
+             Try 2 Free Sessions with Your Child Before Any Decision
+@@ -182,7 +183,8 @@ export default function ParentsLandingPage() {
+             <span className="flex items-center gap-1.5"><i className="fa-solid fa-check text-emerald-400"></i> Slots in Your Time Zone</span>
+           </div>
+         </div>
+-      </footer>
++      </section>
++      <SiteFooter />
+ 
+       {/* =========================================================================
+           4. زر الواتساب العائم للتواصل المباشر
+diff --git a/app/privacy-policy/page.tsx b/app/privacy-policy/page.tsx
+index 896c4ae..9ad6974 100644
+--- a/app/privacy-policy/page.tsx
++++ b/app/privacy-policy/page.tsx
+@@ -1,5 +1,6 @@
+ import Navbar from "@/components/Navbar";
+ import Link from "next/link";
++import SiteFooter from "@/components/SiteFooter";
+ 
+ export const metadata = {
+   title: "Privacy Policy | Fazakkir Academy",
+@@ -84,9 +85,7 @@ export default function PrivacyPolicyPage() {
+         </div>
+       </section>
+ 
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-8 text-center text-sm border-t border-emerald-950">
+-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/app/terms/page.tsx b/app/terms/page.tsx
+index d870415..8cbcfd6 100644
+--- a/app/terms/page.tsx
++++ b/app/terms/page.tsx
+@@ -1,5 +1,6 @@
+ import Navbar from "@/components/Navbar";
+ import Link from "next/link";
++import SiteFooter from "@/components/SiteFooter";
+ 
+ export const metadata = {
+   title: "Terms of Service & Refund Policy | Fazakkir Academy",
+@@ -68,9 +69,7 @@ export default function TermsPage() {
+         </div>
+       </section>
+ 
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-8 text-center text-sm border-t border-emerald-950">
+-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/components/CookieConsent.tsx b/components/CookieConsent.tsx
+index 6bbbd19..869b472 100644
+--- a/components/CookieConsent.tsx
++++ b/components/CookieConsent.tsx
+@@ -51,7 +51,7 @@ export default function CookieConsent({ enabled }: { enabled: boolean }) {
+     <div
+       role="dialog"
+       aria-label="Cookie preferences"
+-      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:max-w-md z-50 rounded-2xl bg-slate-900 text-white p-5 shadow-2xl border border-white/10"
++      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:max-w-md z-[60] rounded-2xl bg-slate-900 text-white p-5 shadow-2xl border border-white/10"
+     >
+       <p className="text-sm leading-relaxed text-slate-200">
+         We use cookies to measure visits and improve our ads. Essential cookies are always on. You can accept or
+diff --git a/components/CookieSettingsLink.tsx b/components/CookieSettingsLink.tsx
+index fbc5b26..f61b0f7 100644
+--- a/components/CookieSettingsLink.tsx
++++ b/components/CookieSettingsLink.tsx
+@@ -1,7 +1,9 @@
+ "use client";
+ 
+-// Put this in the footer so visitors can change their choice at any time.
++// Reopens the cookie banner. The banner only exists when Google Tag Manager is
++// enabled (NEXT_PUBLIC_GTM_ID), so the link is hidden otherwise: there is nothing to configure.
+ export default function CookieSettingsLink({ className }: { className?: string }) {
++  if (!process.env.NEXT_PUBLIC_GTM_ID) return null;
+   return (
+     <button type="button" className={className} onClick={() => window.dispatchEvent(new Event("fz-open-consent"))}>
+       Cookie settings
+diff --git a/components/HomeClient.tsx b/components/HomeClient.tsx
+index 77a781d..02818bc 100644
+--- a/components/HomeClient.tsx
++++ b/components/HomeClient.tsx
+@@ -2,10 +2,10 @@
+ 
+ import Navbar from "@/components/Navbar";
+ import LeadForm from "@/components/LeadForm";
+-import CookieSettingsLink from '@/components/CookieSettingsLink';
+ import Image from "next/image";
+ import Link from "next/link"; 
+ import { useState } from "react"
++import SiteFooter from "@/components/SiteFooter";
+ 
+ export default function HomeClient() {
+   const chooseCourse = (courseTitle: string) => {
+@@ -582,48 +582,7 @@ export default function HomeClient() {
+         <i className="fa-brands fa-whatsapp"></i>
+       </a>
+ 
+-      {/* Footer */}
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-12 text-sm border-t border-emerald-950">
+-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+-          <div>
+-            <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+-              <span className="text-lg font-extrabold text-white">Fazakkir Academy</span>
+-              <span className="font-amiri text-emerald-400 font-bold">فَذَكِّرْ</span>
+-            </div>
+-            <p className="text-xs text-emerald-400/80">
+-              Personalized 1-on-1 Quran, Tajweed & Arabic mentorship by certified Azhari scholars.
+-            </p>
+-          </div>
+-
+-          {/* Legal and Quick Links */}
+-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
+-            <Link href="/pricing" className="hover:text-white transition-colors">
+-              Tuition & Plans
+-            </Link>
+-            <Link href="/privacy-policy" className="hover:text-white transition-colors">
+-              Privacy Policy
+-            </Link>
+-            <Link href="/terms" className="hover:text-white transition-colors">
+-              Terms & Refunds
+-            </Link>
+-            <a
+-              href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000"}?text=${encodeURIComponent("Salam Alaikum Fazakkir Academy Support, I have an inquiry.")}`}
+-              target="_blank"
+-              rel="noopener noreferrer"
+-              className="hover:text-white transition-colors"
+-            >
+-              Support
+-            </a>
+-          </div>
+-
+-          <p className="text-xs text-emerald-500">
+-            © 2026 Fazakkir Academy. All rights reserved.
+-          </p>
+-        </div>
+-           import CookieSettingsLink from "@/components/CookieSettingsLink";
+-   // داخل الـ footer:
+-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/components/PricingCalculator.tsx b/components/PricingCalculator.tsx
+index 7267200..b16eabe 100644
+--- a/components/PricingCalculator.tsx
++++ b/components/PricingCalculator.tsx
+@@ -2,8 +2,8 @@
+ 
+ import { useState } from "react";
+ import Navbar from "@/components/Navbar";
+-import CookieSettingsLink from '@/components/CookieSettingsLink';
+ import Link from "next/link";
++import SiteFooter from "@/components/SiteFooter";
+ 
+ type Currency = "USD" | "GBP" | "EUR";
+ 
+@@ -398,13 +398,7 @@ export default function PricingCalculator() {
+         </div>
+       </section>
+ 
+-      {/* Footer */}
+-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
+-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
+-           import CookieSettingsLink from "@/components/CookieSettingsLink";
+-   // داخل الـ footer:
+-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
+-      </footer>
++      <SiteFooter />
+     </main>
+   );
+ }
+\ No newline at end of file
+diff --git a/components/SiteFooter.tsx b/components/SiteFooter.tsx
+new file mode 100644
+index 0000000..029bc01
+--- /dev/null
++++ b/components/SiteFooter.tsx
+@@ -0,0 +1,49 @@
++import Link from "next/link";
++import CookieSettingsLink from "@/components/CookieSettingsLink";
++
++// One footer for every public page. Edit it here only.
++export default function SiteFooter() {
++  const supportHref = `https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000"}?text=${encodeURIComponent(
++    "Salam Alaikum Fazakkir Academy Support, I have an inquiry."
++  )}`;
++
++  return (
++    <footer className="bg-[#022c22] text-[#a7f3d0] py-12 text-sm border-t border-emerald-950">
++      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
++        <div>
++          <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
++            <span className="text-lg font-extrabold text-white">Fazakkir Academy</span>
++            <span className="font-amiri text-emerald-400 font-bold">فَذَكِّرْ</span>
++          </div>
++          <p className="text-xs text-emerald-400/80">
++            Personalized 1-on-1 Quran, Tajweed &amp; Arabic mentorship by certified Azhari scholars.
++          </p>
++        </div>
++
++        <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
++          <Link href="/pricing" className="hover:text-white transition-colors">
++            Tuition &amp; Plans
++          </Link>
++          <Link href="/courses" className="hover:text-white transition-colors">
++            Courses
++          </Link>
++          <Link href="/blog" className="hover:text-white transition-colors">
++            Blog
++          </Link>
++          <Link href="/privacy-policy" className="hover:text-white transition-colors">
++            Privacy Policy
++          </Link>
++          <Link href="/terms" className="hover:text-white transition-colors">
++            Terms &amp; Refunds
++          </Link>
++          <a href={supportHref} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
++            Support
++          </a>
++          <CookieSettingsLink className="hover:text-white transition-colors" />
++        </nav>
++
++        <p className="text-xs text-emerald-500">© {new Date().getFullYear()} Fazakkir Academy. All rights reserved.</p>
++      </div>
++    </footer>
++  );
++}

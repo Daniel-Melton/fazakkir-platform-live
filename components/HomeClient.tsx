@@ -2,10 +2,10 @@
 
 import Navbar from "@/components/Navbar";
 import LeadForm from "@/components/LeadForm";
-import CookieSettingsLink from '@/components/CookieSettingsLink';
 import Image from "next/image";
 import Link from "next/link"; 
 import { useState } from "react"
+import SiteFooter from "@/components/SiteFooter";
 
 export default function HomeClient() {
   const chooseCourse = (courseTitle: string) => {
@@ -582,48 +582,7 @@ export default function HomeClient() {
         <i className="fa-brands fa-whatsapp"></i>
       </a>
 
-      {/* Footer */}
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-12 text-sm border-t border-emerald-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-          <div>
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-              <span className="text-lg font-extrabold text-white">Fazakkir Academy</span>
-              <span className="font-amiri text-emerald-400 font-bold">فَذَكِّرْ</span>
-            </div>
-            <p className="text-xs text-emerald-400/80">
-              Personalized 1-on-1 Quran, Tajweed & Arabic mentorship by certified Azhari scholars.
-            </p>
-          </div>
-
-          {/* Legal and Quick Links */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-emerald-300 font-medium">
-            <Link href="/pricing" className="hover:text-white transition-colors">
-              Tuition & Plans
-            </Link>
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms & Refunds
-            </Link>
-            <a
-              href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_PHONE_NUMBER || "201000000000"}?text=${encodeURIComponent("Salam Alaikum Fazakkir Academy Support, I have an inquiry.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-            >
-              Support
-            </a>
-          </div>
-
-          <p className="text-xs text-emerald-500">
-            © 2026 Fazakkir Academy. All rights reserved.
-          </p>
-        </div>
-           import CookieSettingsLink from "@/components/CookieSettingsLink";
-   // داخل الـ footer:
-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

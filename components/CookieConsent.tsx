@@ -51,7 +51,7 @@ export default function CookieConsent({ enabled }: { enabled: boolean }) {
     <div
       role="dialog"
       aria-label="Cookie preferences"
-      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:max-w-md z-50 rounded-2xl bg-slate-900 text-white p-5 shadow-2xl border border-white/10"
+      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:max-w-md z-[60] rounded-2xl bg-slate-900 text-white p-5 shadow-2xl border border-white/10"
     >
       <p className="text-sm leading-relaxed text-slate-200">
         We use cookies to measure visits and improve our ads. Essential cookies are always on. You can accept or

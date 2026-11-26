@@ -2,8 +2,8 @@ import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { buildMetadata } from "@/lib/seo";
+import SiteFooter from "@/components/SiteFooter";
 export const metadata = buildMetadata("courses");
-import CookieSettingsLink from '@/components/CookieSettingsLink';
 
 export const revalidate = 60;
 
@@ -76,12 +76,7 @@ export default async function AllCoursesPage() {
         </div>
       </section>
 
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-           import CookieSettingsLink from "@/components/CookieSettingsLink";
-   // داخل الـ footer:
-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

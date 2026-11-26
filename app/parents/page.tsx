@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 import LeadForm from "@/components/LeadForm";
 import { buildMetadata } from "@/lib/seo";
 import { OFFER } from "@/lib/offer";
@@ -168,7 +169,7 @@ export default function ParentsLandingPage() {
       {/* =========================================================================
           3. الشريط السفلي للضمان والراحة
           ========================================================================= */}
-      <footer className="relative z-10 py-14 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+      <section className="relative z-10 py-14 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
             Try 2 Free Sessions with Your Child Before Any Decision
@@ -182,7 +183,8 @@ export default function ParentsLandingPage() {
             <span className="flex items-center gap-1.5"><i className="fa-solid fa-check text-emerald-400"></i> Slots in Your Time Zone</span>
           </div>
         </div>
-      </footer>
+      </section>
+      <SiteFooter />
 
       {/* =========================================================================
           4. زر الواتساب العائم للتواصل المباشر
