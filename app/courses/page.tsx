@@ -77,9 +77,9 @@ export default async function AllCoursesPage() {
 
       <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
         <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-           import CookieSettingsLink from "@/components/CookieSettingsLink";
-   // داخل الـ footer:
-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
+        <div className="mt-6 text-center">
+          <CookieSettingsLink className="text-xs underline text-emerald-300 hover:text-emerald-200" />
+        </div>
       </footer>
     </main>
   );
