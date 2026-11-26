@@ -8,6 +8,7 @@ import { articleSchema, breadcrumbSchema } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import SiteFooter from "@/components/SiteFooter";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -203,9 +204,7 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </article>
 
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-8 text-center text-sm border-t border-emerald-950">
-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

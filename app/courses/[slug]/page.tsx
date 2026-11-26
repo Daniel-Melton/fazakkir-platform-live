@@ -9,6 +9,7 @@ import { courseLearningSchema, breadcrumbSchema } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import SiteFooter from "@/components/SiteFooter";
 
 const COURSE_FALLBACK_DESCRIPTION =
   "1-on-1 online course with Al-Azhar graduate tutors. Try 2 free classes, no credit card needed.";
@@ -209,15 +210,7 @@ export default async function CourseDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-2">
-          <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-          <p className="text-xs text-emerald-400/80">
-            Contact: <a href="mailto:lonelywolf1452@gmail.com" className="hover:underline text-emerald-300">lonelywolf1452@gmail.com</a>
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

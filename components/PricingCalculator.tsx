@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
-import CookieSettingsLink from '@/components/CookieSettingsLink';
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 
 type Currency = "USD" | "GBP" | "EUR";
 
@@ -398,13 +398,7 @@ export default function PricingCalculator() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-10 text-center text-sm border-t border-emerald-950">
-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-           import CookieSettingsLink from "@/components/CookieSettingsLink";
-   // داخل الـ footer:
-   <CookieSettingsLink className="underline text-emerald-300 hover:text-emerald-200" />
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

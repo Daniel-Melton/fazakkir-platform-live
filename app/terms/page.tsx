@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
+import SiteFooter from "@/components/SiteFooter";
 
 export const metadata = {
   title: "Terms of Service & Refund Policy | Fazakkir Academy",
@@ -68,9 +69,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      <footer className="bg-[#022c22] text-[#a7f3d0] py-8 text-center text-sm border-t border-emerald-950">
-        <p>© 2026 Fazakkir Academy. All rights reserved.</p>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
